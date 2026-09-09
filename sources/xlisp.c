@@ -10,7 +10,8 @@
 /* define the banner line string */
 #define BANNER  "XLISP-PLUS version %d.%02d\n\
 Portions Copyright (c) 1988, by David Betz.\n\
-Modified by Thomas Almy and others."
+Modified by Thomas Almy and others.\n\
+Adapted for 64bit RE2026."
 
 
 /* global variables */

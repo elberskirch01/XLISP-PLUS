@@ -100,7 +100,12 @@
 #endif
 
 /* fixnum/flonum/char access macros */
-#define getfixnum(x)    ((x)->n_fixnum)
+#ifdef XLIFIX64
+#define getfixnum(x)    Getfixnum (x)
+#else
+#define getfixnum(x)    ((FIXTYPE) ((x)->n_fixnum))
+#endif
+#define getxlptrt(x)    ((XLPTYPE) ((x)->n_fixnum))
 #define getflonum(x)    ((x)->n_flonum)
 #define getchcode(x)    ((x)->n_chcode)
 
@@ -264,7 +269,11 @@ typedef struct node {
             struct node FAR*xc_cdr;     /* the cdr pointer */
         } n_xcons;
         struct xfixnum {        /* fixnum node */
-            FIXTYPE xf_fixnum;          /* fixnum value */
+#ifdef XLIFIX64	
+            FIXTYPE64 xf_fixnum;          /* fixnum value */
+#else
+            FIXTYPE32 xf_fixnum;          /* fixnum value */
+#endif
         } n_xfixnum;
         struct xflonum {        /* flonum node */
             FLOTYPE xf_flonum;          /* flonum value */
@@ -331,6 +340,8 @@ extern LVAL Cvchar _((int n));          /* convert a character */
 extern LVAL cvfixnum _((FIXTYPE n));    /* convert a fixnum */
 extern LVAL cvchar _((int n));          /* convert a character */
 #endif
+extern FIXTYPE Getfixnum _((LVAL x));
+extern LVAL cvxlptrt _((XLPTYPE p));    /* convert a fixnum */
 extern LVAL cvflonum _((FLOTYPE n));    /* convert a flonum */
 
 #ifdef BIGNUMS

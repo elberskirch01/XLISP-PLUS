@@ -408,6 +408,42 @@ FIXTYPE num, denom;
 }
 #endif
 
+/* Getfixnum - returns FIXTYPE value from a fixnum node. */
+FIXTYPE Getfixnum (x)
+  LVAL x;
+{
+#ifdef XLIFIX64
+    FIXTYPE64 n = x->n_fixnum;
+    if ((n >= LONG_MIN) && (n <= LONG_MAX))
+    {
+       return ((FIXTYPE) n);
+    }
+    else
+    {
+       xlfail ("fixnum64 too large for fixnum");
+       return ((FIXTYPE) 0);
+    }
+#else
+    return (x->n_fixnum);
+#endif
+}
+/* cvxlptrt - convert an memory adress (pointer) to a fixnum node */
+LVAL cvxlptrt(p)
+  XLPTYPE p;
+{
+    LVAL val;
+#ifdef XLIFIX64    
+    FIXTYPE64 n = (FIXTYPE64) p;
+#else
+    FIXTYPE32 n = (FIXTYPE32 p;
+#endif
+    if (n >= SFIXMIN && n <= SFIXMAX)
+        return (&fixseg->sg_nodes[(int)n-SFIXMIN]);
+    val = newnode(FIXNUM);
+    val->n_fixnum = n;
+    return (val);
+}
+
 /* cvflonum - convert a floating point number to a flonum node */
 LVAL cvflonum(n)
   FLOTYPE n;

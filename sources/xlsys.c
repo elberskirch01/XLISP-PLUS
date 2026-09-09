@@ -545,7 +545,7 @@ LVAL xpeek()
     OFFTYPE *adr;   /* TAA MOD so that data fetched is sizeof(LVAL *) */
 
     /* get the address */
-    num = xlgafixnum(); adr = (OFFTYPE *)getfixnum(num);
+    num = xlgafixnum(); adr = (OFFTYPE *)getxlptrt(num);
     xllastarg();
 
     /* return the value at that address */
@@ -559,7 +559,7 @@ LVAL xpoke()
     OFFTYPE *adr;   /* TAA MOD so that data fetched is sizeof(LVAL *) */
 
     /* get the address and the new value */
-    val = xlgafixnum(); adr = (OFFTYPE *)getfixnum(val);
+    val = xlgafixnum(); adr = (OFFTYPE *)getxlptrt(val);
     val = xlgafixnum();
     xllastarg();
 
@@ -580,7 +580,7 @@ LVAL xaddrs()
     xllastarg();
 
     /* return the address of the node */
-    return (cvfixnum((FIXTYPE)val));
+    return (cvxlptrt((XLPTYPE)val));
 }
 
 #ifdef RANDOM
@@ -700,7 +700,7 @@ int checkfeatures(arg, which)
         LVAL arg;
         int which;
 {
-    int has_feature;
+    int has_feature = 0; /* RE2026: Initialization added. */
     LVAL features = getvalue(s_features);
   
     if (consp(arg)) {

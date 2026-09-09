@@ -373,7 +373,8 @@ LOCAL LVAL NEAR entermsg(cls,msg)
 LOCAL LVAL NEAR sendmsg(obj,cls,sym)
   LVAL obj,cls,sym;
 {
-    LVAL msg,msgcls,method,val,p;
+    LVAL msgcls,method,val,p;
+    LVAL msg = NULL; /* RE2026: Initialization added. */
 
     /* look for the message in the class or superclasses */
     for (msgcls = cls; !null(msgcls); ) {

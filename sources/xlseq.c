@@ -148,7 +148,8 @@ LOCAL LVAL NEAR map(into)
 int into;
 {
     FRAMEP newfp;
-    LVAL fun, lists, val, last, x, y, y2;
+    LVAL fun, lists, val, x, y, y2;
+    LVAL last = NULL; /* RE2026: Initialization added. */
     unsigned len,temp, i;
     int argc, typ;
     
@@ -591,7 +592,8 @@ LVAL xconcatenate()
 
 LVAL xsubseq()
 {
-    unsigned start,end=0,len;
+    unsigned start,end=0;
+    unsigned len = 0; /* RE2026: Initialization added. */
     FIXTYPE temp;
     int srctype;
     LVAL src,dst;
@@ -1381,7 +1383,7 @@ LOCAL LVAL NEAR substituteif(tresult,expr)
 {
     LVAL x,seq,fcn,val,next,repl;
     LVAL last=NULL;
-    char ch;
+    char ch = 0; /* RE2026: Initialization added. */
     unsigned i,j,l;
     unsigned start,end;
     long s;
@@ -1674,7 +1676,7 @@ LOCAL LVAL NEAR nsubstituteif(tresult,expr)
   int tresult,expr;
 {
     LVAL x,seq,fcn,val,repl;
-    char ch;
+    char ch = 0; /* RE2026: Initialization added. */
     unsigned i,j,l;
     unsigned start,end;
 
@@ -2254,21 +2256,17 @@ LVAL xsearch()
             }
         }
         else for (j=start1; j < end1; j++) {
-#ifdef KEYARG
-            if (dotest2s(typ1 == VECTOR ? 
+            LVAL val1 = (typ1 == VECTOR ? 
                 getelement(seq1,j) : 
-                cvchar(getstringch(seq1,j)),
-                typ2 == VECTOR ? 
+                cvchar(getstringch(seq1,j)));
+	    LVAL val2 = (typ2 == VECTOR ? 
                 getelement(seq2,i+j-start1) : 
-                cvchar(getstringch(seq2,i+j-start1)), fcn, kfcn) 
+                cvchar(getstringch(seq2,i+j-start1)));
+#ifdef KEYARG
+	    if (dotest2s(val1, val2, fcn, kfcn) 
                 != tresult)
 #else
-            if (dotest2(typ1 == VECTOR ? 
-                getelement(seq1,j) : 
-                cvchar(getstringch(seq1,j)),
-                typ2 == VECTOR ? 
-                getelement(seq2,i+j-start1) : 
-                cvchar(getstringch(seq2,i+j-start1)), fcn) 
+            if (dotest2(val1, val2, fcn) 
                 != tresult)
 #endif
                     goto next2;

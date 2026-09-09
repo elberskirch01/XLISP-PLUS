@@ -654,8 +654,10 @@ LOCAL int equ2 P2C(LVAL, x, LVAL, y)
   case RT:
   case FL:
     return compare2(x, y) == 0;
-  case CR:
-    return equ2(realpart(x),realpart(y)) && equ2(imagpart(x),imagpart(y));
+  case CR: {
+    LVAL ix = imagpart (x); /* RE2026: Defining sequence */
+    LVAL iy = imagpart (y); /* RE2026: Defining sequence. */
+    return equ2(realpart(x),realpart(y)) && equ2(ix,iy); }
   case CF:
     {
       LVAL rx, ix, ry, iy;
@@ -1797,7 +1799,8 @@ LVAL xexpt(V)
 
     /* complex float base or complex power */
     if ((complexp(base) /* && floatp(getreal(base)) */ ) || complexp(power)) {
-        dcomplex zb, zp, zv;
+        dcomplex zb, zv;
+	dcomplex zp = {0.0, 0.0}; /* RE2026: Initialization added. */
         makecomplex(&zb, base);
         makecomplex(&zp, power);
         z_expt(&zv, &zb, &zp);
@@ -1868,7 +1871,8 @@ LVAL xexpt(V)
         if (fb == 0.0 && fp > 0.0)
             return(cvflonum((FLOTYPE) 0.0));
         else if (fb < 0.0) {
-            dcomplex zb, zp, zv;
+            dcomplex zb, zv;
+	    dcomplex zp = {0.0, 0.0}; /* RE2026: Initialization added. */
             makecomplex(&zb, base);
             makecomplex(&zp, power);
             z_expt(&zv, &zb, &zp);
@@ -1905,7 +1909,8 @@ LVAL xfexpt(V)
 LVAL xatan(V)
 {
   LVAL lnum, ldenom;
-  dcomplex cnum, cdenom, cval;
+  dcomplex cnum, cval;
+  dcomplex cdenom = {0.0, 0.0}; /* RE2026: Initialization added. */
 
   lnum = xlgetarg();
 
@@ -1960,7 +1965,9 @@ LVAL xlog(V)
 {
   LVAL arg, base;
   double fx, fb;
-  dcomplex zx, zb, zv;
+  dcomplex zv;
+  dcomplex zb = {0.0, 0.0}; /* RE2026: Initialization added. */
+  dcomplex zx = {0.0, 0.0}; /* RE2026: Initialization added. */
 
   arg = xlgetarg();
   if (moreargs()) {
@@ -2248,7 +2255,7 @@ LVAL xasin(V)
     }
   case COMPLEX:
     {
-      dcomplex zx;
+      dcomplex zx = {0.0, 0.0}; /* RE2026: Initialization added. */
       makecomplex(&zx, x);
       z_asin(&zx, &zx);
       return cvcomplex(zx);
@@ -2278,7 +2285,7 @@ LVAL xacos(V)
     }
   case COMPLEX:
     {
-      dcomplex zx;
+      dcomplex zx = {0.0, 0.0}; /* RE2026: Initialization added. */
       makecomplex(&zx, x);
       z_acos(&zx, &zx);
       return cvcomplex(zx);

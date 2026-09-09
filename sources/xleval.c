@@ -613,7 +613,8 @@ LOCAL LVAL NEAR evfun(fun,argc,argv)
 LVAL xlclose(name,type,fargs,body,env,fenv)
   LVAL name,type,fargs,body,env,fenv;
 {
-    LVAL closure,key,arg,def,svar,new,last;
+    LVAL closure,arg,def,svar,new,last;
+    LVAL key = NULL; /* RE2026: Initialization added. */
 #ifndef PACKAGES
     char keyname[STRMAX+2];
 #endif /* PACKAGES */

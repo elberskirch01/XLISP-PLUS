@@ -22,7 +22,9 @@
 #undef FAR
 #undef NEAR
 #undef CDECL
+#ifndef XLVS2022
 #define STRICT
+#endif
 #include <commdlg.h>
 #include <shellapi.h>
 #include "xlispwin.h"
@@ -235,7 +237,11 @@ int PASCAL WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     arrowCursor = LoadCursor(NULL, IDC_ARROW);
     waitCursor = LoadCursor(NULL, IDC_WAIT);
     gcCursor = LoadCursor(hInstance, "CURSOR_1");
+#ifdef XLWIN64
+     SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR) ourBrush);
+#else
      SetClassLong(hWnd, GCL_HBRBACKGROUND, (LONG)ourBrush);
+#endif     
 
     hAccel = LoadAccelerators(hInstance, "ACCELERATORS_1");
 
@@ -636,7 +642,11 @@ LRESULT CALLBACK WndProc(HWND dummy, UINT message,
             int i;
 #endif
             static char statbuf[20];
+#ifdef XLWIN64
+            SetClassLongPtr(hStatusWnd, GCLP_HBRBACKGROUND, COLOR_WINDOW+1);
+#else
             SetClassLong(hStatusWnd, GCL_HBRBACKGROUND, COLOR_WINDOW+1);
+#endif	    
             DC = BeginPaint(hStatusWnd, &PS);
             savedFont = SelectObject(DC, ourFont);
             SetTextColor(DC, GetSysColor(COLOR_WINDOWTEXT));
@@ -647,17 +657,33 @@ LRESULT CALLBACK WndProc(HWND dummy, UINT message,
             ExtTextOut(DC, 0, charSize.y, 0, NULL, statbuf, 17, charSpacing);
             sprintf(statbuf, " GC calls: %5d ", gccalls);
             ExtTextOut(DC, 0, charSize.y*2, 0, NULL, statbuf, 17, charSpacing);
+#ifdef XLWIN64
+            sprintf(statbuf, " Edepth: %7lld ", xlstack-xlstkbase);
+#else
             sprintf(statbuf, " Edepth: %7d ", xlstack-xlstkbase);
+#endif	    
             ExtTextOut(DC, 0, charSize.y*3, 0, NULL, statbuf, 17, charSpacing);
+#ifdef XLWIN64	    
+            sprintf(statbuf, " Adepth: %7lld ", xlargstktop-xlsp);
+#else
             sprintf(statbuf, " Adepth: %7d ", xlargstktop-xlsp);
+#endif	    
             ExtTextOut(DC, 0, charSize.y*4, 0, NULL, statbuf, 17, charSpacing);
 #ifdef STSZ
+#ifdef XLWIN64
+            sprintf(statbuf, " Sdepth: %7lld ", STACKREPORT(i));
+#else
             sprintf(statbuf, " Sdepth: %7d ", STACKREPORT(i));
+#endif	    
             ExtTextOut(DC, 0, charSize.y*5, 0, NULL, statbuf, 17, charSpacing);
 #endif
             SelectObject(DC, savedFont);
             EndPaint(hWnd, &PS);
+#ifdef XLWIN64	    
+            SetClassLongPtr(hStatusWnd, GCLP_HBRBACKGROUND, (LONG_PTR) ourBrush);
+#else
             SetClassLong(hStatusWnd, GCL_HBRBACKGROUND, (LONG)ourBrush);
+#endif	    
             return 0;
         }
           return DefWindowProc(dummy, message, wParam, lParam);
@@ -830,10 +856,10 @@ LRESULT CALLBACK WndProc(HWND dummy, UINT message,
                     WinHelp(hWnd, HELPNAME, HELP_CONTENTS, 0L);
                     return 0;
                 case M_INDEX:
-                    WinHelp(hWnd, HELPNAME, HELP_KEY, (long int) "INDEX");
+                    WinHelp(hWnd, HELPNAME, HELP_KEY, (DWORD_PTR) "INDEX");
                     return 0;
                 case M_SEARCH:
-                    WinHelp(hWnd, HELPNAME, HELP_PARTIALKEY, (long int)"");
+                    WinHelp(hWnd, HELPNAME, HELP_PARTIALKEY, (DWORD_PTR)"");
                     return 0;
                     
             }
@@ -1849,11 +1875,19 @@ static void xinfo()
 {
 #ifdef STSZ
     int i;
+#ifdef XLWIN64
+    sprintf(buf,
+            "\n[ Free: %ld, Total: %ld, GC calls: %ld,\n"
+            "  Edepth: %lld, Adepth %lld, Sdepth: %lld ]",
+            nfree, total, gccalls, xlstack-xlstkbase,
+            xlargstktop-xlsp, STACKREPORT(i));
+#else
     sprintf(buf,
             "\n[ Free: %ld, Total: %ld, GC calls: %ld,\n"
             "  Edepth: %d, Adepth %d, Sdepth: %d ]",
             nfree, total, gccalls, xlstack-xlstkbase,
             xlargstktop-xlsp, STACKREPORT(i));
+#endif	    
 #else
     sprintf(buf,
             "\n[ Free: %ld, Total: %ld, GC calls: %ld,\n"
@@ -2113,7 +2147,11 @@ LVAL xcolor()
      ourPen = CreatePen(PS_SOLID, 0, charColor);
      DeleteObject(ourBrush);
      ourBrush = CreateSolidBrush(bkgColor);
+#ifdef XLWIN64
+     SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)ourBrush);
+#else
      SetClassLong(hWnd, GCL_HBRBACKGROUND, (LONG)ourBrush);
+#endif     
      return arg;
 }
 

@@ -9,7 +9,8 @@
 int xlgetc(fptr)
   LVAL fptr;
 {
-    LVAL lptr,cptr;
+    LVAL lptr;
+    LVAL cptr = NULL; /* RE2026: Initialization added. */
     FILEP fp;
     int ch;
 
@@ -93,7 +94,8 @@ VOID xlungetc(fptr,ch)
 int xlpeek(fptr)
   LVAL fptr;
 {
-    LVAL lptr,cptr;
+    LVAL lptr;
+    LVAL cptr = NULL; /* RE2026: Initialization added. */
     int ch;
 
     /* check for input from nil */

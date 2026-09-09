@@ -94,7 +94,7 @@ LVAL xdefstruct()
 {
     LVAL structname,slotname,defexpr,sym,tmp,args,body;
     LVAL options,oargs,slots;
-    char FAR *pname;
+    char FAR *pname = NULL; /* RE2026: Initialization added. */
     int slotn;
 
     /* protect some pointers */

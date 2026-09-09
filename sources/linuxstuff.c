@@ -452,7 +452,7 @@ VOID ostputc(int ch )
 #endif
         /*        putchar( ch ); */
         
-        0 == write(2,buf,1); // It might be redirected -- always want stderr
+        (void) (0 == write(2,buf,1)); /* RE2026: Result ignored. */ // It might be redirected -- always want stderr
 #ifdef GRAPHICS
         }
 #endif
@@ -707,7 +707,7 @@ static void xputc(int ch) {
     } else {
 #endif
     char chbuf = (char) ch;
-    0 == write(2, &chbuf, 1);
+    (void) (0 == write(2, &chbuf, 1)); /* RE2026: Ignore result. */
 #ifdef GRAPHICS
     }
 #endif

@@ -1,0 +1,28 @@
+# Makefile for VS (2022/2026) WIN32
+#Chose optimizations with care for this compiler
+
+OFILES=xlisp.obj xlbfun.obj xlcont.obj xldbug.obj xldmem.obj xleval.obj \
+xlfio.obj xlglob.obj xlimage.obj xlinit.obj xlio.obj xljump.obj xllist.obj \
+xlmath.obj xlobj.obj xlpp.obj xlprin.obj xlread.obj xlstr.obj xlsubr.obj \
+xlsym.obj xlsys.obj xlseq.obj xlstruct.obj xlmath2.obj win32stu.obj \
+xlmath3.obj xlbignum.obj
+
+#For VS (2022/2026) WIN32
+CFLAGS = -DMSC -DXLVS2022 -DSTSZ=16384
+
+CC = cl
+
+.c.obj:
+	$(CC) $(CFLAGS) -c $<
+
+xlisp20.exe:	$(OFILES) xlftab.obj
+	link /SUBSYSTEM:WINDOWS /MACHINE:X86 $(OFILES) xlftab.obj gdi32.lib User32.lib Shell32.lib Comdlg32.lib
+
+
+xlisp.h:	xldmem.h xlftab.h
+	touch xlisp.h
+
+xlftab.obj:	xlisp.h osdefs.h osptrs.h
+
+$(OFILES):	xlisp.h
+
