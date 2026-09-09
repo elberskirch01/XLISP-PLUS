@@ -75,7 +75,7 @@
 
 /* This option modifies performance, but don't affect execution of
    application programs (other than speed) */
-#define JMAC        /* performance enhancing macros, Johnny Greenblatt 
+#undef JMAC        /* performance enhancing macros, Johnny Greenblatt 
                         (7.5K at full config). Don't bother for 16 bit
                         MSDOS compilers. */
 
@@ -292,6 +292,7 @@
 /* ITYPE        fixed point input conversion routine type (long atol()) */
 /* ICNV         fixed point input conversion routine (atol) */
 /* IFMT         printf format for fixed point numbers ("%ld") (no BIGNUMS)*/
+/* XLPTYPE      data type for memory address (void *) */
 /* FLOTYPE      data type for floating point numbers (double) */
 /* OFFTYPE      number the size of an address (int) */
 /* CVPTR        macro to convert an address to an OFFTYPE. We have to go
@@ -302,7 +303,7 @@
                 only effects the SAVE command. (OFFTYPE)(x) */
 /* ALIGN32      Compiler has 32 bit ints and 32 bit alignment of struct
                 elements */
-/* DOSINPUT     OS specific code can read using OS's line input functon */
+/* DOSINPUT     OS specific code can read using OS's line input function */
 /* IEEEFP       IEEE FP -- proper printing of +-INF and NAN
                        for compilers that can't hack it.
                        Currently for little-endian systems. */
@@ -574,13 +575,23 @@ extern char *stackbase;
 #define MAXSLEN         (65519U)
 #define MAXVLEN         (16379U)
 #define ANSI
+#ifdef XLPTR64
+#define AFMT            "%llx"
+#define OFFTYPE         long long
+#define CVPTR(x)        ((OFFTYPE)(x))
+#else
 #define AFMT            "%lx"
 #define OFFTYPE         long
 #define CVPTR(x)        ((((unsigned long)(x) >> 16) << 4) + ((unsigned) x))
+#endif
 #define CDECL _cdecl
 #define DOSINPUT
 #undef JMAC         /* not worth effort if cramped for space */
+#ifndef XLVS2022
 #define NEAR _near
+#else
+#define NEAR
+#endif
 #ifndef FILETABLE
 #define OSBOPEN osbopen /* special mode for binary files */
 extern FILE * _cdecl osbopen(const char *name, const char *mode);   /* open binary file */
@@ -816,8 +827,13 @@ extern char *stackbase;
 #define VSSIZE 20000
 #define NNODES 10000
 #define ALIGN32
+#ifdef XLPTR64
+#define AFMT                    "%llx"
+#define OFFTYPE                 unsigned long long
+#else
 #define AFMT                    "%lx"
 #define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
+#endif
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -1126,8 +1142,17 @@ extern VOID osclose _((int i)); /* we must define this */
 #ifndef AFMT
 #define AFMT            "%x"
 #endif
+#ifndef FIXTYPE32
+#define FIXTYPE32         long
+#endif
+#ifndef FIXTYPE64
+#define FIXTYPE64         long long
+#endif
 #ifndef FIXTYPE
-#define FIXTYPE         long
+#define FIXTYPE         FIXTYPE32
+#endif
+#ifndef XLPTYPE
+#define XLPTYPE         void *
 #endif
 #ifdef ANSI /* ANSI C Compilers already define this! */
 #include <limits.h>
@@ -1380,8 +1405,8 @@ extern VOID osclose _((int i)); /* we must define this */
    or s_unbound, for example). */
 #define tagentry_p(x) (fixp(car(x)))
 #define tagentry_value(x) (cdr(x))
-#define tagentry_context(x) ((CONTXT *) getfixnum(car(x)))
-#define xlbindtag(c,t,e) xlpbind(cvfixnum((FIXTYPE) (c)),(t),e);
+#define tagentry_context(x) ((CONTXT *) getxlptrt(car(x)))
+#define xlbindtag(c,t,e) xlpbind(cvxlptrt((XLPTYPE) (c)),(t),e);
 #endif
 
 /* macros to manipulate the dynamic environment */
@@ -1403,7 +1428,7 @@ extern VOID osclose _((int i)); /* we must define this */
 #ifdef __BORLANDC__
 #define null(x)         (((unsigned)(void _seg *)(x)) == ((unsigned)(void _seg *) NIL))
 #else
-#ifdef MSC
+#if defined(MSC) && !defined(XLVS2022)
 #define null(x)         (((unsigned)(_segment *)(x)) == ((unsigned)(_segment *) NIL))
 #else
 #define null(x)         ((x) == NIL)

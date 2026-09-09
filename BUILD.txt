@@ -1,75 +1,20 @@
-
-Note, when compiling, you may get a number of "uninitialized"
-warnings.  These are not uninitialized.  The compiler can't see that
-the function is being exited before that point.
-
 To build:
 
-Linux:
+Linux (64bit Ubuntu 24):
 
 	cd sources
-	make -f makelinux
+	make -f makelx64
 	
-Mac:
+Windows, VS (2022/2026) with X64_X86 Cross Tools:
 	cd source
-	make -f makeosx
+	nmake -f makevswin32
+	
+Windows, VS (2022/2026) with X64 Native Tools:
+	cd source
+	nmake -f makevswin64
 	
 
-Windows:  (latest port unfinished and unworking)
+Note:
+touch is used also in Makefile for MS Visual Studio, but is not part of the community release. But it can obtained e.g. from GNU Win32 Tools.
 
-	cd sources
-	make -f makewin
-	
-----------------------------------------------
-
-Notes
-
-Exiting XLISP:  (exit)
-
-
-File extensions
-
-	.lsp	lisp source code
-
-	.wks	saved binary workspace (image)
-
-
-OS Environment Variable:
-
-	XLPATH	when loading a .lsp or .wks file the system searches
-		this path first, and then the local directory
-
-
-Startup
-
-First, try to load "xlisp.wks", if no other is specified, or another
-if specified.
-
-If no wks file is loaded, then load "init.lsp"
-
-
-The init.lsp file that comes with XLISP is important because it loads
-all of the lisp code that makes the system full-featured.
-
-
-(save "myimage")	create image of workspace in file "myimage.wks"
-
-(restore "myimage")	restore image "myimage.wks"
-
-
-Starting xlisp with an initial image file (and do not load init.lsp)
-
-	xlisp -wIMAGEFILE
-
-e.g.
-
-	xlisp -wmyimage
-
-
-In all cases, file name extensions ".lsp" and ".wks" are assumed.
-
-
-Arrays are limited to 1 dimension
-
-
-File makewks.lsp can be used to create an initial image
+See also the original build.txt.

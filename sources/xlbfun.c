@@ -487,7 +487,7 @@ LVAL xgensym()
 {
 #ifdef BETTERGENSYM
     char prefix[STRMAX+22];
-    FIXTYPE suffix;
+    FIXTYPE suffix = 0; /* RE2026: Initialization added. */
     int storeflag = TRUE;
     if ((!fixp(getvalue(s_gensymcounter))) || (suffix = getfixnum(getvalue(s_gensymcounter))) < 0 )
         xlerror("*gensym-counter* isn't non-negative fixnum", getvalue(s_gensymcounter));

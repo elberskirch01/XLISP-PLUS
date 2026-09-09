@@ -1716,7 +1716,8 @@ LOCAL VOID NEAR dobindings(list,env,denv,seq)
   LVAL list,env,*denv;
   int seq;
 {
-    LVAL bnd,sym,val;
+    LVAL bnd,val;
+    LVAL sym = NULL; /* RE2026: Initialization added. */
     LVAL plist;
 
     /* protect some pointers */

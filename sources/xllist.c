@@ -769,7 +769,7 @@ LOCAL LVAL NEAR nth(carflag)
 /* xlength - return the length of a list or string */
 LVAL xlength()
 {
-    FIXTYPE n;
+    FIXTYPE n = 0; /* RE2026: Initialization added. */
     LVAL arg;
 
     /* get the list or string */
@@ -1044,7 +1044,7 @@ LVAL list,sortfcn,sortkey;
     /* Find the center of the list */
     {
         unsigned i=0;
-        LVAL temp;
+        LVAL temp = NULL; /* RE2026: Initialization added. */
         left = right = list;
         while (consp(list) && consp(list=cdr(list))) {
             list = cdr(list);
@@ -1058,7 +1058,8 @@ LVAL list,sortfcn,sortkey;
     right = mergesortk(right, sortfcn, sortkey);
 
     {
-        LVAL result, resultt, leftarg, rightarg;
+        LVAL result, leftarg, rightarg;
+	LVAL resultt = NULL; /* RE2026: Initialization added. */
         leftarg = xlapp1(sortkey, car(left));
         xlprotect(leftarg);
         rightarg = xlapp1(sortkey, car(right));
@@ -1126,7 +1127,7 @@ LVAL list,sortfcn;
     /* Find the center of the list */
     {
         unsigned i=0;
-        LVAL temp;
+        LVAL temp = NULL; /* RE2026: Initialization added. */
         left = right = list;
         while (consp(list) && consp(list=cdr(list))) {
             list = cdr(list);
@@ -1139,7 +1140,8 @@ LVAL list,sortfcn;
     right = xmergesort(right, sortfcn);
 
     {
-        LVAL result, resultt;
+        LVAL result;
+	LVAL resultt = NULL; /* RE2026: Initialization added. */
         xlsave(result); /* set to NIL */
 
         while (TRUE) {
@@ -1424,7 +1426,7 @@ LVAL xsubsetp()        { return(set_op('S')); }
 LVAL xmakehash()    /* rewritten by TAA */
 {
     LVAL size, testfcn, result;
-    FIXTYPE len;
+    FIXTYPE len = 0; /* RE2026: Initialization added. */
 
     if (xlgetkeyarg(k_size,&size)) {
         if (!fixp(size) || (len=getfixnum(size)) < 1)

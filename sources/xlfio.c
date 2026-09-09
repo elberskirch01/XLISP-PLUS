@@ -1183,7 +1183,7 @@ FIXTYPE *pp;            /* prefix parameters */
 int     colon;          /* colon modifier given? */
 int     atsign;         /* at-sign modifier given? */
 {
-    int flatsiz;
+    int flatsiz = 0; /* RE2026: Initialization added. */
     int i;
 
     if (mincol < 0) mincol = 0; /* handle default values */
@@ -1388,10 +1388,12 @@ int     fixnum;         /* type D, O or X */
 {
 #ifdef BIGNUMS
     char FAR *bufr;
-    FIXTYPE radix;
+    FIXTYPE radix = 0; /* RE2026: Initialization added. */
 #endif
     char cmd[50];
-    int fillchar, i, commachar, commacount, startcount;
+    int fillchar, i, startcount;
+    int commachar = 0; /* RE2026: Initialization added. */
+    int commacount = 0; /* RE2026: Initialization added. */
 
 #ifdef BIGNUMS
     if (pflag == 'R') {

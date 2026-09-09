@@ -1,40 +1,47 @@
+# XLISP-PLUS modified for 64bit pointers
 
-# XLISP-PLUS Almy
+This XLISP-PLUS is forked from blakemcbride/XLISP-PLUS.
 
-XLISP-PLUS is an enhanced version of David Michael Betz's XLISP 2.1 to
-have additional features of Common Lisp. XLISP-PLUS runs on Microsoft
-Windows, Apple macOS, Linux and UNIX, but can be easily ported to
-other platforms. Complete source code is provided to allow easy
-modification and extension.
+The home for this GitHub release is [https://github.com/elberskirch01/XLISP-PLUS](https://github.com/elberskirch01/XLISP-PLUS)
 
-Since XLISP-PLUS is based on XLISP 2.1, most XLISP programs will run on
-XLISP-PLUS. Since XLISP-PLUS incorporates many more features of
-Common Lisp, many small Common Lisp applications will run on
-XLISP-PLUS with little modification. 
+The home for the original GitHub release is [https://github.com/blakemcbride/XLISP-PLUS](https://github.com/blakemcbride/XLISP-PLUS)
 
-Many Common Lisp functions are built into XLISP-PLUS. In addition,
-XLISP defines the objects Object and Class as primitives. Object is
-the only class that has no superclass and hence is the root of the
-class hierarchy tree. Class is the class of which all classes are
-instances (it is the only object that is an instance of itself).
+## Modifications
 
-## GitHub release
+The following issues are modified:
+xf-fixnum of Fixnum node is extended to "long long" (64bit),
+so that it can host 64bit pointer values.
+Some local variables are initialized, so that compile warnings
+of type
+"Variable may be used uninitialized." vanished.
+Some multiple evaluations of JMAC macros as actual parameters of
+a function are moved in front of
+the function call, to avoid warnings of the form
+"Undefined sequence oof operations.".
+The new getxlptrt() and cvxlptrt() are introduced to enable 
+64bit conversion between XLPTYPE (void *) and Fixnum node 
+(internal value type FIXTYPE64).
 
-After interacting with Tom Almy over many years and making a few bug
-fixes and enhancements to XLISP-PLUS, Tom gave me permission to put
-this system on GitHub.  I have also obtained permission from David Betz.
+In the new Makefiles the following preprocessor defines are used:
+XLPTR64: prepares code for handling of 64bit pointers.
+XLIFIX64: prepares code to define xf_fixnum as FIXTYPE64 (long long) in Fixnum node.
+XLWIN64: prepares code in win32stu.c to use new 64bit versions of Windows API.
 
-Version 2.x of Betz's XLISP followed Common Lisp.  Version 3.x of Betz's
-XLISP changed to Scheme rather than Common Lisp.  Thus, this version is, in
-a sense, the continuation of XLISP 2.x.
+New in code:
+GetFixnum(): retrieves FIXTYPE (32bit) from 64bit xf_fixnum after range check.
+XLPTYPE: provides intermediate type to set a 64bit pointer to or to get a 64bit pointer from Fixnum node.
+getxlptrt(): gets pointer from Fixnum node.
+cvxlptrt(): converts a pointer to a Fixnum node.
 
-The version numbers between Betz's XLISP and Almy's XLISP are also
-confusing.  When Almy forked XLISP he made it version 3.x in order to
-distinguish it from Betz's XLISP.  However, when Betz moved from
-Common Lisp to Scheme he also called it version 3.x.  Thus they're
-both version 3.x.  The best way to differentiate them is that Almy
-also renamed the package XLISP-PLUS.
+Remaining issues
 
-The home for this GitHub release is [https://github.com/blakemcbride/XLISP-PLUS](https://github.com/blakemcbride/XLISP-PLUS)
+The Windows xlisp.exe created by makevswin32 with VS2022 X64_X86 Cross Tools doesn't start-up.
+Same holds for makevswin64 with VS2022 X64 Native Tools.
 
-Blake McBride
+Executable xlisp created with makelx64 seems to work fine.
+Also saving and restoring WKS seems to work at a first glance.
+Restoring 32bit WKS by 64bit executable is not considered ut to now.
+
+See also the original README.
+
+Ralf Elberskirch
