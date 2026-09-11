@@ -1006,7 +1006,7 @@ LVAL xalloc()
 /* xmem - xlisp function to print memory statistics */
 LVAL xmem()
 {
-    /* allow one argument for compatiblity with common lisp */
+    /* allow one argument for compatibility with common lisp */
     if (xlargc > 1) xltoomany();    /* TAA Mod */
 
     /* print the statistics */

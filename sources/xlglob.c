@@ -185,7 +185,7 @@ LVAL s_startup_functions=NULL, s_command_line=NULL;
 LVAL s_loadfileargs=NULL, s_toplevelloop=NULL;
 
 /* general purpose string buffer */
-char buf[STRMAX*2+1] = { 0 };
+char buf[XLGPBUFLEN] = { 0 };
 
 /* Number of remaining nodes */
 long nnodes;

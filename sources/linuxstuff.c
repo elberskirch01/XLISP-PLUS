@@ -202,7 +202,8 @@ VOID osinit(char *banner)
 
         if(!redirectin) {
           fprintf(stderr,"%s\nLinux version\n", banner );
-        }
+	  fprintf (stderr, "  Sizeof(struct node) = %zd\n", sizeof (struct node));
+	  }
         if (!(redirectin && batchmode)) {
             init_tty();
         }

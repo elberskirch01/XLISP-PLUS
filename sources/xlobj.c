@@ -56,7 +56,7 @@ LOCAL VOID NEAR xputobj(fptr,val)
             xlputstr(fptr,buf);
         }
     }
-    sprintf(buf,AFMT,(OFFTYPE)val); 
+    sprintf(buf,AFMT,(AFMTTYPE)val); 
     xlputstr(fptr,buf);
     xlputc(fptr,'>');
 }

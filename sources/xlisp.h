@@ -288,6 +288,7 @@
 /* LOCAL        type of a local function (static) */
 /* NEAR         function is is same segment (8086 processors) () */
 /* AFMT         printf format for addresses ("%x") */
+/* AFMTTYPE     printf parameter type for addresses ("%x") */
 /* FIXTYPE      data type for fixed point numbers (long) */
 /* ITYPE        fixed point input conversion routine type (long atol()) */
 /* ICNV         fixed point input conversion routine (atol) */
@@ -422,7 +423,9 @@ extern FILE * _cdecl osbopen(const char *name, const char *mode);   /* open bina
 #define MAXVLEN         (16379U)
 #define ANSI
 #define AFMT            "%lx"
+#define AFMTTYPE        unsigned long
 #define OFFTYPE         unsigned long
+#define MAXOFFTYPE       ULONG_MAX
 #if __ZTC__ < 0x300
 #define IEEEFP      /* they fixed this */
 #endif
@@ -482,7 +485,9 @@ extern char *stackbase;
 #define MAXVLEN         (16383U)
 #define ANSI
 #define AFMT            "%lx"
+#define AFMTTYPE        unsigned long
 #define OFFTYPE         unsigned long
+#define MAXOFFTYPE       ULONG_MAX
 #ifdef MEDMEM
 #define CVPTR(x)        (unsigned long)(x)
 #else
@@ -521,7 +526,9 @@ extern char *stackbase; /* in theory-- we should use TSC's function */
 #define MAXVLEN         (16379U)
 #define ANSI
 #define AFMT            "%lx"
+#define AFMTTYPE        unsigned long
 #define OFFTYPE         unsigned long
+#define MAXOFFTYPE       ULONG_MAX
 #ifdef MEDMEM
 #define CVPTR(x)        (unsigned long)(x)
 #else
@@ -577,13 +584,15 @@ extern char *stackbase;
 #define ANSI
 #ifdef XLPTR64
 #define AFMT            "%llx"
-#define OFFTYPE         long long
-#define CVPTR(x)        ((OFFTYPE)(x))
+#define AFMTTYPE        unsigned long long
+#define CVPTR(x)        ((unsigned long long)(x))
 #else
 #define AFMT            "%lx"
-#define OFFTYPE         long
+#define AFMTTYPE        unsigned long
 #define CVPTR(x)        ((((unsigned long)(x) >> 16) << 4) + ((unsigned) x))
 #endif
+#define OFFTYPE         unsigned long
+#define MAXOFFTYPE       ULONG_MAX
 #define CDECL _cdecl
 #define DOSINPUT
 #undef JMAC         /* not worth effort if cramped for space */
@@ -699,7 +708,9 @@ extern char *stackbase;
 #define NNODES 10000
 #define ALIGN32
 #define AFMT                    "%lx"
+#define AFMTTYPE        unsigned long
 #define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
+#define MAXOFFTYPE       ULONG_MAX
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -756,7 +767,9 @@ extern char *stackbase;
 #define NNODES 10000
 #define ALIGN32
 #define AFMT                    "%lx"
+#define AFMTTYPE        unsigned long
 #define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
+#define MAXOFFTYPE       ULONG_MAX
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -829,11 +842,15 @@ extern char *stackbase;
 #define ALIGN32
 #ifdef XLPTR64
 #define AFMT                    "%llx"
-#define OFFTYPE                 unsigned long long
+#define AFMTTYPE        unsigned long long
+#define CVPTR(x)        ((unsigned long long)(x))
 #else
 #define AFMT                    "%lx"
-#define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
+#define AFMTTYPE        unsigned long
+#define CVPTR(x)        ((unsigned long)(x))
 #endif
+#define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
+#define MAXOFFTYPE       ULONG_MAX
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -882,6 +899,7 @@ extern int osopen();
 #define ADEPTH 6000
 #define ALIGN32
 #define AFMT                    "%lx"
+#define AFMTTYPE        unsigned long
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -916,6 +934,7 @@ extern int osopen();
 #define ADEPTH 6000
 #define ALIGN32
 #define AFMT         "%lx"
+#define AFMTTYPE        unsigned long
 #define SEEK_SET      0
 #define SEEK_CUR      1
 #define SEEK_END      2
@@ -1141,6 +1160,7 @@ extern VOID osclose _((int i)); /* we must define this */
 #endif
 #ifndef AFMT
 #define AFMT            "%x"
+#define AFMTTYPE        unsigned int
 #endif
 #ifndef FIXTYPE32
 #define FIXTYPE32         long
@@ -1196,6 +1216,7 @@ extern VOID osclose _((int i)); /* we must define this */
 #endif
 #ifndef OFFTYPE
 #define OFFTYPE         int
+#define MAXOFFTYPE      INT_MAX
 #endif
 #ifndef CVPTR
 #define CVPTR(x)        ((OFFTYPE)(x))
