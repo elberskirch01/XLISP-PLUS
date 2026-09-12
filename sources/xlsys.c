@@ -542,29 +542,31 @@ LVAL xexit()
 LVAL xpeek()
 {
     LVAL num;
-    OFFTYPE *adr;   /* TAA MOD so that data fetched is sizeof(LVAL *) */
+    FIXTYPE *adr;   /* TAA MOD so that data fetched is sizeof(LVAL *) */
 
     /* get the address */
-    num = xlgafixnum(); adr = (OFFTYPE *)getxlptrt(num);
+    num = xlgafixnum(); 
+    adr = (FIXTYPE *)getxlptrt(num);
     xllastarg();
 
     /* return the value at that address */
-    return (cvfixnum((FIXTYPE)*adr));
+    return (cvfixnum(*adr));
 }
 
 /* xpoke - poke a value into memory */
 LVAL xpoke()
 {
     LVAL val;
-    OFFTYPE *adr;   /* TAA MOD so that data fetched is sizeof(LVAL *) */
+    FIXTYPE *adr;   /* TAA MOD so that data fetched is sizeof(LVAL *) */
 
     /* get the address and the new value */
-    val = xlgafixnum(); adr = (OFFTYPE *)getxlptrt(val);
+    val = xlgafixnum(); 
+    adr = (FIXTYPE *)getxlptrt(val);
     val = xlgafixnum();
     xllastarg();
 
     /* store the new value */
-    *adr = (OFFTYPE)getfixnum(val);
+    *adr = getfixnum(val);
 
     /* return the new value */
     return (val);

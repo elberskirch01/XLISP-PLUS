@@ -179,6 +179,7 @@ extern LVAL s_startup_functions, s_command_line;
 extern LVAL s_loadfileargs, s_toplevelloop;
 
 /* general purpose string buffer */
+#define XLGPBUFLEN (STRMAX*2+1)
 extern char buf[];
 
 /* remaining nodes */

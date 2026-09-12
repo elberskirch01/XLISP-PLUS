@@ -611,7 +611,7 @@ LOCAL VOID NEAR putatm(fptr,tag,val)
 {
     sprintf(buf, "#<%s: #", tag);
     xlputstr(fptr, buf);
-    sprintf(buf, AFMT, CVPTR(val)); /* TAA Fix 2/94: was just val */
+    sprintf(buf, AFMT, (AFMTTYPE)CVPTR(val)); /* TAA Fix 2/94: was just val */
     xlputstr(fptr, buf);
     xlputc(fptr, '>');
 }
@@ -627,7 +627,7 @@ LOCAL VOID NEAR putsubr(fptr,tag,val)
     else
         sprintf(buf,"#<%s: #",tag);
     xlputstr(fptr, buf);
-    sprintf(buf, AFMT, CVPTR(val)); /* TAA Fix 2/94: was just val */
+    sprintf(buf, AFMT, (AFMTTYPE)CVPTR(val)); /* TAA Fix 2/94: was just val */
     xlputstr(fptr, buf);
     xlputc(fptr, '>');
 }
@@ -650,7 +650,7 @@ LOCAL VOID NEAR putclosure(fptr,val)
     else
         strcpy(buf,"#<Closure: #");
     xlputstr(fptr, buf);
-    sprintf(buf, AFMT, CVPTR(val)); /* TAA Fix 2/94: was just val */
+    sprintf(buf, AFMT, (AFMTTYPE)CVPTR(val)); /* TAA Fix 2/94: was just val */
     xlputstr(fptr, buf);
     xlputc(fptr, '>');
 }
@@ -708,7 +708,7 @@ LOCAL VOID putpackage(fptr,val)
     }
     else {
         xlputstr(fptr, "#<Package ???: #");
-        sprintf(buf,AFMT, CVPTR(val)); /* TAA Fix 2/94, was (OFFTYPE)val */
+        sprintf(buf,AFMT, (AFMTTYPE)val); /* TAA Fix 2/94, was (OFFTYPE)val */
         xlputstr(fptr,buf);
         xlputc(fptr,'>');
     }

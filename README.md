@@ -32,6 +32,16 @@ GetFixnum(): retrieves FIXTYPE (32bit) from 64bit xf_fixnum after range check.
 XLPTYPE: provides intermediate type to set a 64bit pointer to or to get a 64bit pointer from Fixnum node.
 getxlptrt(): gets pointer from Fixnum node.
 cvxlptrt(): converts a pointer to a Fixnum node.
+AFMTTYPE: Type in printf like calls corresponding to AFMT.
+   It replaces usage of OFFTYPE at that situation.
+MAXOFFTYPE: The maximum value of OFFTYPE. It is mostly defined as ULONG_MAX.   
+
+The OFFTYPE in dlimage.c and xlimage.c is still 32bit (unsigned long).
+Since OFFTYPE is a counter of nodes corresponding to the node pointers,
+A nstruct ode requires at 64bit pointers 24 bytes.
+2^32-1 would require for 64bit 96 GB of memory. Hence 32bit OFFTYPE is sufficient.
+Therefore 64bit created images are compatible with 32bit created images.
+
 
 Remaining issues
 
@@ -39,8 +49,6 @@ The Windows xlisp.exe created by makevswin32 with VS2022 X64_X86 Cross Tools doe
 Same holds for makevswin64 with VS2022 X64 Native Tools.
 
 Executable xlisp created with makelx64 seems to work fine.
-Also saving and restoring WKS seems to work at a first glance.
-Restoring 32bit WKS by 64bit executable is not considered ut to now.
 
 See also the original README.
 

@@ -3,6 +3,7 @@
         All Rights Reserved
         Permission is granted for unrestricted non-commercial use   */
 /* modified so that offset is in sizeof(node) units */
+#include <assert.h>
 #include "xlisp.h"
 
 #ifdef SAVERESTORE
@@ -434,29 +435,51 @@ LOCAL LVAL NEAR cviptr(o)
   OFFTYPE o;
 {
     OFFTYPE off = (OFFTYPE)2;
+    OFFTYPE numnodes;
     SEGMENT *seg;
 
     /* check for nil */
     if (o == FILENIL)
         return (NIL);
 
+    /* Check lower limit of o */
+    if (o < off) {
+        xlerror ("Input offset below start offset.", NIL);
+	return (NIL);
+	}
+    
     /* compute a pointer for this offset */
     for (seg = segs; seg != NULL; seg = seg->sg_next) {
-        if (o < off + (OFFTYPE)seg->sg_size)
+        assert (o >= off);
+        if ((o - off) < (OFFTYPE)seg->sg_size)
             return (seg->sg_nodes + (unsigned int)(o - off));
         off += (OFFTYPE)seg->sg_size;
     }
 
     /* create new segments if necessary */
     for (;;) {
+
+        /* Calculate maximum remaing OFFTYPE range. */
+	if ((MAXOFFTYPE - anodes) <= off) {
+	   numnodes = anodes;
+	} else {
+	    numnodes = (MAXOFFTYPE - anodes);
+	}
+
     /* create the next segment */
-        if ((seg = newsegment(anodes)) == NULL)
+        if ((seg = newsegment(numnodes)) == NULL)
             xlfatal("insufficient memory - segment");
 
 
     /* check to see if the offset is in this segment */
-        if (o < off + (OFFTYPE)seg->sg_size)
+	assert (o >= off);
+        if ((o - off) < (OFFTYPE)seg->sg_size)
             return (seg->sg_nodes + (unsigned int)(o - off));
+	/* Check upper limit of off */
+	if ((MAXOFFTYPE - (OFFTYPE) seg->sg_size) < off) {
+	    xlfatal ("Too many nodes in segments.");
+	    return (0);
+	    }
         off += (OFFTYPE)seg->sg_size;
     }
 }
@@ -467,7 +490,11 @@ LOCAL OFFTYPE NEAR cvoptr(p)
 {
     OFFTYPE off = (OFFTYPE)2;
     SEGMENT *seg;
+#ifdef XLPTR64
+    unsigned long long np = CVPTR(p);
+#else
     OFFTYPE np = CVPTR(p);
+#endif    
 
     /* check for nil */
     if (null(p))
@@ -476,8 +503,20 @@ LOCAL OFFTYPE NEAR cvoptr(p)
     /* compute an offset for this pointer */
     for (seg = segs; seg != NULL; seg = seg->sg_next) {
         if (np >= CVPTR(&seg->sg_nodes[0]) &&
-            np <  CVPTR(&seg->sg_nodes[seg->sg_size]))
-                return (off+ ((np-CVPTR(seg->sg_nodes))/sizeof(struct node)));
+            np <  CVPTR(&seg->sg_nodes[seg->sg_size])) {
+	    OFFTYPE segoff = ((np-CVPTR(seg->sg_nodes))/sizeof(struct node));
+	    /* Check upper limit of off */
+	        if ((MAXOFFTYPE - segoff) < off) {
+	            xlfatal ("Too many nodes in segments.");
+	           return (0);
+	            }
+                return (off + segoff);
+		}
+	/* Check upper limit of off */
+	if ((MAXOFFTYPE - (OFFTYPE) seg->sg_size) < off) {
+	    xlfatal ("Too many nodes in segments.");
+	    return (0);
+	    }
             off += (OFFTYPE)seg->sg_size;
     }
 
