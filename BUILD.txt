@@ -8,10 +8,14 @@ Linux (64bit Ubuntu 24):
 Windows, VS (2022/2026) with X64_X86 Cross Tools:
 	cd source
 	nmake -f makevswin32
+	or for console:
+	nmake -f makevs32stdio
 	
 Windows, VS (2022/2026) with X64 Native Tools:
 	cd source
 	nmake -f makevswin64
+	or for console:
+	nmake -f makevs64stdio
 	
 
 Note:
