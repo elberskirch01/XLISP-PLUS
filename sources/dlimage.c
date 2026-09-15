@@ -559,10 +559,10 @@ LOCAL LVAL NEAR cviptr(o)
     for (;;) {
     
         /* Calculate maximum remaing OFFTYPE range. */
-	if ((MAXOFFSET - anodes) <= off) {
+	if ((MAXOFFTYPE - anodes) <= off) {
 	   numnodes = anodes;
 	} else {
-	    numnodes = (MAXOFFSET - anodes);
+	    numnodes = (MAXOFFTYPE - anodes);
 	}
 
         /* create the next segment */
