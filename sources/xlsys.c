@@ -623,7 +623,11 @@ LVAL xmakerandom()
             return newrandom((long)getfixnum(arg));
         }
         xllastarg();
+#ifdef TIMES
         if (arg == s_true) return newrandom(real_tick_count());
+#else
+        if (arg == s_true) return newrandom(0ul);
+#endif
         if (null(arg)) arg = getvalue(s_randomstate);
     }
     else arg = getvalue(s_randomstate);

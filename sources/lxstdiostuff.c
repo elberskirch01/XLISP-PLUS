@@ -27,23 +27,16 @@
 *
 * 92Jan29 CrT.  Edit history.  Reversed SysV gtty/stty #defs fixed.
 *****************************************************************************/
-#include <signal.h>
 #include <sys/types.h>
-#include <sys/wait.h>
 #include <sys/times.h>
-#include <sys/fcntl.h>
 #include <time.h>
 #include <errno.h>
 #include <ctype.h>
 #include <math.h>
 
-#include <unistd.h>
-#include <termios.h>
-struct termios savetty;
-struct termios newtty;
-#define gtty(fd,arg)    (emacs_input ? 0 : tcgetattr(fd, arg))
-#define stty(fd,arg)    (emacs_input ? 0 : tcsetattr(fd, TCSANOW, arg))
 
+#undef PATHNAMES
+/* #undef TIMES */
 #define beep()  xputc(7)
 #define flushbuf() fflush(stderr);
 
@@ -59,20 +52,26 @@ struct termios newtty;
 /* extern long times(); */
 
 /* -- local variables */
+#if 0
 static  char    lbuf[LBSIZE];
+#endif
 //static  int     lpos[LBSIZE];
 static  int     lindex;
 static  int     lcount;
+#if 0
 static  int     emacs_input;
+#endif
 #define TABUFSIZE (128)
 static char typeaheadbuf[TABUFSIZE];
 static int nextta = 0;
 
 
+#if 0
 static void init_tty(void);
+#endif
 static void xflush(void);
 
-#define EXTENDED_INPUT
+#undef EXTENDED_INPUT
 #ifdef EXTENDED_INPUT
 /* Command history */
 #define HISTSIZE (20)
@@ -86,18 +85,6 @@ static void searchobarray(LVAL array, unsigned char *st, int l, int append,
 
 #endif
 
-#ifdef GRAPHICS
-#include "application.h"
-static int gModeOut; // True if in graphics mode rather than text mode
-static int gModeInit; // True if graphics mode has been initialized
-static int xpos, ypos; // Current coordiates
-static int xSize, ySize; // Current window size
-#define GCBUFSIZE (128)
-static char gcharbuf[GCBUFSIZE+1];
-static int gcindex = 0;
-static void pushgcbuf(char ch);
-static void flushgcbuf(void);
-#endif
 
 
 static int xgetc(void);
@@ -123,6 +110,7 @@ LVAL xgetkey(void) {
 LVAL
 xsystem(void)
 {
+#if 0
     char *          getenv();
     char           *comstr;
     LVAL            command;
@@ -179,6 +167,9 @@ xsystem(void)
      * return T if success (exit status 0), else return exit status
      */
     return (result ? cvfixnum(result) : s_true);
+#else
+    return (cvfixnum (1));
+#endif
 }
 
 
@@ -196,13 +187,13 @@ VOID osinit(char *banner)
 	char foo;
 	stackbase = &foo;
 #endif
+#if 0
         redirectout = !isatty(fileno(stdout));
         redirectin = !isatty(fileno(stdin));
         emacs_input = getenv("EMACS") != NULL || getenv("EPSRUNS") != NULL;
 
         if(!redirectin) {
-          fprintf(stderr,"%s.\n%s[%s]\nLinux version\n", 
-	      banner, XLADAPT64CMT, XLADAPT64CFG );
+          fprintf(stderr,"%s\nLinux version\n", banner );
 	  fprintf (stderr, "  Sizeof(struct node) = %zd\n", sizeof (struct node));
 	  }
         if (!(redirectin && batchmode)) {
@@ -210,14 +201,22 @@ VOID osinit(char *banner)
         }
         lindex  = 0;
         lcount  = 0;
+#else
+          fprintf(stderr,"%s.\n%s[%s]\nLinux version\n", 
+	      banner, XLADAPT64CMT, XLADAPT64CFG );
+	  fprintf (stderr, "  Sizeof(struct node) = %zd\n", sizeof (struct node));
+#endif
 }
 
 /* -- osfinish - clean up before returning to the operating system */
 VOID osfinish()
 {
+#if 0
     if(!(redirectin && batchmode)) {
         stty(2, &savetty);
     }
+#else
+#endif
 }
 
 
@@ -246,6 +245,7 @@ long osrand(rseed)
     /* return a random number between 0 and MAXFIX */
     return rseed;
 }
+
 #ifdef FILETABLE
 extern VOID gc();
 
@@ -277,8 +277,12 @@ char        *name,*rname;
         }
 
         /* get the current directory of the selected drive */
-        
+
+#if 0        
         if (getcwd(curdir, FNAMEMAX) == NULL) return FALSE;
+#else
+        strncpy (curdir, "/mnt/z/src/xlisp35/lx_x64", FNAMEMAX);
+#endif
 
         /* peel off "../"s */
         while (strncmp(pathbuf, "../", 3) == 0) {
@@ -447,16 +451,12 @@ VOID ostputc(int ch )
             lposition++;
 
         /* -- output the character */
-#ifdef GRAPHICS
-        if (gModeOut) {
-            pushgcbuf(ch);
-        } else {
-#endif
         /*        putchar( ch ); */
         
+#if 0
         (void) (0 == write(2,buf,1)); /* RE2026: Result ignored. */ // It might be redirected -- always want stderr
-#ifdef GRAPHICS
-        }
+#else
+        fputc (buf[0], stdout);
 #endif
 
         /* -- output the char to the transcript file */
@@ -470,17 +470,13 @@ VOID ostputc(int ch )
 /* -- osflush - flush the terminal input buffer */
 VOID osflush(void)
 {
-#ifdef GRAPHICS
-    if (gModeOut) {
-        flushgcbuf();
-        update();
-    }
-#endif
 //	nextta = 0;
         lindex = lcount = 0;
 }
 
+#if 0
 static int sigint_received;
+#endif
 
 
 static VOID xinfo(void);
@@ -509,6 +505,7 @@ void osx_check(char ch)
 }
 
 int kbhit(void) {
+#if 0
     struct timeval tv;
     fd_set rdfs;
     tv.tv_sec = 0;
@@ -518,11 +515,15 @@ int kbhit(void) {
 
     select(STDIN_FILENO+1, &rdfs, NULL, NULL, &tv);
     return FD_ISSET(STDIN_FILENO, &rdfs);
+#else
+    return (0);
+#endif
 }
 
 /* This is a non-blocking read */
 VOID oscheck(void)
 {
+#if 0
     if (sigint_received) {
         sigint_received = 0;
         xltoplevel();
@@ -538,6 +539,7 @@ VOID oscheck(void)
             osx_check(buf[0]);
         }
     }
+#endif
 }
 
 /* -- ossymbols - enter os-specific symbols */
@@ -574,11 +576,14 @@ static VOID xinfo()
 /* xflush - flush the input line buffer and start a new line */
 void xflush(void)
 {
+#if 0
     nextta = 0; // Get rid of any typeahead
     osflush();
     ostputc('\n');
+#endif
 }
 
+#if 0
 static void handle_interrupt(int sig)
 {
 #if !defined(BSD) && !defined(POSIX)
@@ -587,7 +592,9 @@ static void handle_interrupt(int sig)
 #endif
     sigint_received = 1;
 }
+#endif
 
+#if 0
 static void onsusp(int sig);
 
 void init_tty(void)
@@ -656,9 +663,11 @@ static void onsusp(int sig)
     stty(2, &newtty);
 #endif
 }
+#endif
 
 static int xgetc()
 {
+#if 0
     int nrd, charval;
     unsigned char buf[2];
 
@@ -699,20 +708,15 @@ static int xgetc()
         } 
     }
     return charval;
+#else
+    return (fgetc (stdin));
+#endif
 }    
 
 #ifdef EXTENDED_INPUT
 static void xputc(int ch) {
-#ifdef GRAPHICS
-    if (gModeOut) {
-        pushgcbuf(ch);
-    } else {
-#endif
     char chbuf = (char) ch;
     (void) (0 == write(2, &chbuf, 1)); /* RE2026: Ignore result. */
-#ifdef GRAPHICS
-    }
-#endif
 }
 
 
@@ -729,13 +733,6 @@ int ostgetc()
 {
     int ch;
 
-#ifdef GRAPHICS
-    if (gModeOut) {
-        flushgcbuf();
-        gModeOut = FALSE;
-        update();
-    }
-#endif
 
     /* check for a buffered character */
     if (lcount-- > 0)
@@ -929,6 +926,7 @@ join_downarrow:
 
 #else /* Not EXTENDED_INPUT */
 
+#if 0
 /* The next three functions implement the original ostgetc */
 static char *xfgets(char *s, int n);
 static int read_keybd(void);
@@ -1011,10 +1009,12 @@ char *xfgets(char *s, int n)
         *cs++ = '\0';
         return(s);
 }
+#endif /* 0 */
 
 /* -- ostgetc - get a character from the terminal */
 int     ostgetc()
 {
+#if 0
     while(--lcount < 0 )
     {
         if ( xfgets(lbuf,LBSIZE) == NULL )
@@ -1028,6 +1028,9 @@ int     ostgetc()
     }
 
     return( lbuf[lindex++] );
+#else
+    return (fgetc (stdin));
+#endif
 }
 #endif /* EXTENDED_INPUT */
 
@@ -1307,497 +1310,5 @@ static int listmatches(void)
 	return TRUE;
 }
 
-#endif
+#endif /* EXTENDED_INPUT */
 
-#ifdef GRAPHICS
-// All graphics extension related code is here.
-// We access graphics by calling C-interface functions in
-// application.cpp:
-
-// These in turn access methods of the CThread object which use the
-// signal-slot interface across threads to the main thread executing
-// Grapher object. Lots of work to pull it off, but it seems to work
-// with as little possible upset to the existing XLISP code.
-//
-// The provided functions are:
-// void move_to(int x, int y);
-// void draw_to(int x, int y);
-// void set_size(int width, int height); // Set the desired screen size
-// void erase_screen(void);
-// void set_foreground(int r, int g, int b); // r&256=1 to do XOR
-// void set_background(int r, int g, int b);
-// void write_text(char *string);            // uses default font.
-//    void set_brush(int r, int g, int b, int style);
-//    void draw_rectangle(int x1, int y1, int x2, int y2);
-//    void draw_ellipse(int x, int y, int w, int h);
-//    void set_font(int size, int type, int style);
-// void update(void);                        // screen not updated
-                                             // until this funcion is
-                                             // called
-
-// We will consider ourselves to be in character mode if the XLISP MODE
-// is set to a character mode or we read from the keyboard as all
-// terminal I/O is character mode. We go to graphics mode when any
-// graphics move or draw command is given. In graphics mode text is
-// written to the graphics window instead of the terminal.
-// We will update the screen when we do keyboard input or call the
-// XLISP MODE command. If the mode doesn't change, the mode command is
-// a simple refresh of the display.
-
-   
-
-   // function goto-xy which set/obtains cursor position
-   // If we are in a graphics mode this will end up doing a "move_to"
-   // in preparation for an eventual "write_text".
-   // If we are in text mode, we will set the position by sending
-   // the ANSI command. This is a kludge since we won't be retrieving
-   // the current position in text mode.
-   
-LVAL xgotoxy()
-{
-    LVAL res;
-    int cxpos = (int)getfixnum(xlgafixnum());
-    int cypos = (int)getfixnum(xlgafixnum());
-    int lastx=cxpos, lasty=cypos;
-    xllastarg();
-    flushgcbuf();
-    if (gModeOut) {
-           int width, height;
-           get_metrics(&width, &height);
-           lastx = xpos/width + 1;
-           lasty = ypos/height + 1;
-           if (cxpos < 1) cxpos=1;
-           else if (cxpos > xSize/width) cxpos = xSize/width;
-           xpos = (cxpos-1)*width;
-           if (cypos < 1) cypos = 1;
-           else if (cypos > ySize/height) cypos = ySize/height;
-           ypos = cypos * height;
-    } else {
-        char buf[32];
-        sprintf(buf, "\033[%d;%dH", cypos, cxpos);
-        (void)write(2, buf, strlen(buf));
-    }
-
-    xlsave1(res);
-    res = consa(cvfixnum((FIXTYPE)lasty));
-    res = cons(cvfixnum((FIXTYPE)lastx), res);
-    xlpop();
-    return res;
-}
-
-// Clear the graphics screen. In character mode we also
-// clear the console screen with the ANSI sequence.
-
-LVAL xcls()
-{
-    xllastarg();
-    if (!gModeOut) {
-        (void)write(2, "\033[2J\033[1;1H", 10);
-    }
-
-    if (gModeInit) {
-        erase_screen();
-        gcindex = 0;    // Flush print buffer
-    }
-    return NIL;
-}
-
-// Clear to end of line only works for the console and sends an ANSI
-// sequence. Why do we even have this one??
-
-LVAL xcleol()
-{
-    xllastarg();
-    if (!gModeOut) {
-        (void)write(2, "\033[K", 3);
-    }
-    return NIL;
-}
-
-/* xmode -- set display mode */
-/* called with either ax contents, or ax,bx,xsize,ysize */
-/* This obviously is bogus, but tries its best to mimic the old
- * CGA/EGA/VGA modes. If xsize and ysize are specified then this sets
- * an arbitrary screen size with 256^3 colors.
- * If mode 0-3 is selected we are left in text mode otherwise we are
- * left in graphics mode.
- * Note that doing a drawing command switches back to the last graphics
- * mode automatically. Reading from the console switches to text mode
- * automatically. */
-
-LVAL xmode()
-{
-    int mode, xsize, ysize;
-    int isText = FALSE;
-    if (gModeInit) flushgcbuf(); // Make sure we have written out any graphics text
-    mode = (int)getfixnum(xlgafixnum());
-    if (moreargs()) { // ignore this
-        (void)getfixnum(xlgafixnum());
-    }
-    if (moreargs()) { // gotta be two more
-        xsize = getfixnum(xlgafixnum());
-        ysize = getfixnum(xlgafixnum());
-        if (xsize < 320) xsize = 320;
-        if (ysize < 200) ysize = 200;
-    } else {
-        switch (mode) {
-            case 0: case 1:
-            case 2: case 3: isText = TRUE; break;
-            case 4: case 5: case 13: case 19: xsize =320; ysize=200; break;
-            case 6: case 14: xsize=640; ysize=200; break;
-            case 16: xsize = 640; ysize = 350; break;
-            case 18: xsize = 640; ysize = 480; break;
-            default: xsize = 1024; ysize = 768; break;
-        }
-    }
-
-    if (isText) {
-        gModeOut = FALSE;
-        if (gModeInit) update(); // Make sure display is updated as we leave
-        LVAL res;
-        xlsave1(res);
-        res = consa(cvfixnum((FIXTYPE)-1));
-        res = cons(cvfixnum((FIXTYPE)-1), res);
-        res = cons(cvfixnum((FIXTYPE)25), res);
-        res = cons(cvfixnum((FIXTYPE)(mode > 1 ? 80 : 40)), res);
-        xlpop();
-        return res;
-
-    }
-
-    if (gModeInit && !isText && xsize==xSize && ysize==ySize) {
-        // no change, but refresh display
-        update();
-    } else {
-        // we need to set the size
-        xSize = xsize;
-        ySize = ysize;
-        set_size(xSize, ySize);
-        gModeInit = TRUE;
-    }
-    gModeOut = TRUE; // direct output to graphics window
-    {   // return current screen size
-        LVAL res;
-        int width, height;
-        get_metrics(&width, &height);
-        xlsave1(res);
-        res = consa(cvfixnum((FIXTYPE)ysize));
-        res = cons(cvfixnum((FIXTYPE)xsize), res);
-        res = cons(cvfixnum((FIXTYPE)(ySize/height)), res);
-        res = cons(cvfixnum((FIXTYPE)(xSize/width)), res);
-        xlpop();
-        return res;
-    }
-}
-
-/* Move and draw functions. These force graphics mode as long
-   as it has been initialized at some point. */
-static void modeCheck() {
-    if (!gModeInit) xlfail("Graphics mode not initialized");
-    flushgcbuf();
-    gModeOut = TRUE;
-}
-
-static unsigned char colorMap[16][3] = {
-    {0,0,0},                  /* These choices work somehow */
-    {0,0,170},
-    {0,170,0},
-    {0,170,170},
-    {170,0,0},
-    {170,0,170},
-    {170,85,0},
-    {170,170,170},
-    {85,85,85},
-    {85,85,255},
-    {85,255,85},
-    {85,255,255},
-    {255,85,85},
-    {255,85,255},
-    {255,255,85},
-    {255,255,255}};
-
-static int inrange(int value) {
-    if (value > 255) {
-        return 255;
-    }
-    if (value < 0) {
-        return 0;
-    }
-    return value;
-}
-/* Color is interpreted the same regardless of the mode.
-   We allow a three argument or one argument value. The one
-   argument value mimics the early PC palleted colors while
-   the three argument version allows 2^8 of each R, G, and B.
-   Adding 256 to R gives XOR mode. */
-LVAL xcolor()
-{
-    LVAL arg;
-    int r, g, b, r2, g2, b2;
-    int setbkg = FALSE;
-    int xormode;
-
-    modeCheck();
-    
-    arg = xlgafixnum();
-    if (moreargs()) {
-        r = getfixnum(arg);
-        g = getfixnum(xlgafixnum());
-        b = getfixnum(xlgafixnum());
-        if (moreargs()) {   /* set background */
-            r2 = inrange(getfixnum(xlgafixnum()));
-            g2 = inrange(getfixnum(xlgafixnum()));
-            b2 = inrange(getfixnum(xlgafixnum()));
-            xllastarg();
-            setbkg = TRUE;
-        }
-        xormode = (int)(r & 256);
-        arg = s_true;
-        r = inrange(r & 255);
-        g = inrange(g);
-        b = inrange(b);
-    }
-    else {
-        int v = (int)getfixnum(arg);
-        int bgindex = ((v >> 4) & 7) + ((v >> 5) & 8);
-        int fgindex = v&15;
-        xormode = (v&128) != 0;
-        r = colorMap[fgindex&15][0];
-        g = colorMap[fgindex&15][1];
-        b = colorMap[fgindex&15][2];
-        r2 = colorMap[bgindex][0];
-        g2 = colorMap[bgindex][1];
-        b2 = colorMap[bgindex][2];
-        setbkg = TRUE;
-    }
-
-    if (setbkg) set_background(r2, g2, b2);
-    set_foreground(xormode ? r+256 : r, g, b);
-    
-    return arg;
-}
-
-
-/* Specify a color (integer or triplet), and style (integer) for the
- * fill brush. */
-LVAL xbrush()
-{
-    LVAL arg, argsave;
-    int r, g, b, style;
-
-    modeCheck();
-    argsave = arg = xlgetarg();
-    if (consp(arg)) {
-        if (ntype(car(arg)) != FIXNUM) {
-            xlerror("Triplet color expected", argsave);
-        }
-        r = 255 & getfixnum(car(arg));
-        arg = cdr(arg);
-        if (!consp(arg) || ntype(car(arg)) != FIXNUM) {
-            xlerror("Triplet color expected", argsave);
-        }
-        g = 255 & getfixnum(car(arg));
-        arg = cdr(arg);
-        if (!consp(arg) || ntype(car(arg)) != FIXNUM ||!null(cdr(arg)))  {
-            xlerror("Triplet color expected", argsave);
-        }
-        b = 255 & getfixnum(car(arg));
-    } else if (ntype(arg) == FIXNUM) {
-        int v = getfixnum(arg);
-        r = colorMap[v&15][0];
-        g = colorMap[v&15][1];
-        b = colorMap[v&15][2];
-    } else {
-        xlerror("Color value expected", arg);
-    }
-    style = getfixnum(xlgafixnum());
-    xllastarg();
-            
-    set_brush(r, g, b, style);
-    return (s_true);
-}
-
-LVAL xfont()
-{
-    int size, type, style;
-    modeCheck();
-    size = getfixnum(xlgafixnum());
-    type = getfixnum(xlgafixnum());
-    style = getfixnum(xlgafixnum());
-    set_font(size, type, style);
-
-    return s_true;
-}
-
-
-
-#define FLIPY(y) (ySize - (y) - 1)
-
-LVAL xrect()
-{
-    int x1, y1, w, h;
-    x1 = getfixnum(xlgafixnum());
-    y1 = getfixnum(xlgafixnum());
-    w = getfixnum(xlgafixnum());
-    h = getfixnum(xlgafixnum());
-    xllastarg();
-    modeCheck();
-    draw_rectangle(x1, FLIPY(y1), x1+w, FLIPY(y1+h));
-    return (s_true);
-}
-
-LVAL xellipse()
-{
-    int x, y, w, h;
-    x = getfixnum(xlgafixnum());
-    y = getfixnum(xlgafixnum());
-    w = getfixnum(xlgafixnum());
-    if (moreargs()) {
-        h = getfixnum(xlgafixnum());
-    } else {
-        h = w;
-    }
-    xllastarg();
-    modeCheck();
-    draw_ellipse(x, FLIPY(y), w, -h);
-    return (s_true);
-}    
-
-LVAL xdraw()
-{
-    LVAL arg;
-    int newx, newy;
-    modeCheck();
-    while (moreargs()) {
-        arg = xlgafixnum();
-        newx = (int) getfixnum(arg);
-
-        arg = xlgafixnum();
-        newy = FLIPY((int) getfixnum(arg));
-
-        draw_to(newx,newy);
-
-        xpos = newx;
-        ypos = newy;
-    }
-    return s_true;
-}
-
-/* xdrawrel -- absolute draw */
-
-LVAL xdrawrel()
-{
-    LVAL arg;
-    int newx, newy;
-
-    modeCheck();
-    while (moreargs()) {
-        arg = xlgafixnum();
-        newx = xpos + (int) getfixnum(arg);
-
-        arg = xlgafixnum();
-        newy = ypos - (int) getfixnum(arg);
-
-        draw_to(newx,newy);
-
-        xpos = newx;
-        ypos = newy;
-    }
-    return s_true;
-}
-
-/* xmove -- absolute move, then draw */
-
-LVAL xmove()
-{
-    LVAL arg;
-
-    modeCheck();
-    arg = xlgafixnum();
-    xpos = (int) getfixnum(arg);
-
-    arg = xlgafixnum();
-    ypos = FLIPY((int) getfixnum(arg));
-
-    move_to(xpos, ypos);
-    
-    return (xdraw());
-}
-
-/* xmoverel -- relative move */
-
-LVAL xmoverel()
-{
-    LVAL arg;
-
-    modeCheck();
-    arg = xlgafixnum();
-    xpos += (int) getfixnum(arg);
-
-    arg = xlgafixnum();
-    ypos -= (int) getfixnum(arg);
-
-    move_to(xpos, ypos);
-
-    return (xdrawrel());
-}
-
-/* Add a character to the graphic character buffer. If it is full then
- * flush it out */
-static void pushgcbuf(char ch) {
-    if (ch == '\b') {
-        // Backspace by flushing the buffer and then backing up the position
-        int height, width;
-        get_metrics(&width, &height);
-        flushgcbuf();
-        xpos -= width;
-        if (xpos < 0) xpos = 0;
-    } else if (ch == 7) {
-        // We need to do the bell in text,  not graphics
-        char buf[2] = {7};
-        flushgcbuf();
-        write(2, buf, 1);
-    } else if (ch == '\n') {
-        int height, width;
-        get_metrics(&width, &height);
-        flushgcbuf();
-        xpos = 0;
-        ypos += height;
-        if (ypos >= ySize) ypos = ySize-1;
-    } else {
-        gcharbuf[gcindex++] = ch;
-        if (gcindex >= GCBUFSIZE) flushgcbuf();
-    }
-}
-
-/* Flush out the contents of the graphic character buffer */
-static void flushgcbuf(void) {
-    if (gcindex > 0) {
-        int height, width;
-        get_metrics(&width, &height);
-        move_to(xpos, ypos);
-        gcharbuf[gcindex] = '\0';
-        write_text(gcharbuf);
-        update();
-        xpos += width*gcindex;
-        gcindex = 0;
-        if (xpos >= xSize) { // Do a complementary carriage return
-            ypos += height;
-            if (ypos >= ySize) ypos = ySize-1;
-        }
-    }
-}
-
-/* If we are in graphic mode, update the display and go to text mode */
-void xrevertToText(void) {
-    if (gModeOut) {
-        if (gcindex > 0) 
-            flushgcbuf();
-        else
-            update();
-        gModeOut = FALSE;
-    }
-}
-
-
-#endif

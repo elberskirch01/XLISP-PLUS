@@ -509,7 +509,9 @@ extern FILE * _Cdecl osbopen(const char *name, const char *mode);   /* open bina
 double myldexp(double, int);
 #endif
 #endif
-#endif
+#endif /* WINDOWS */
+
+
 /* for the JPI TopSpeed C Compiler, Medium or Large memory model */
 /* GRAPHICS ok */
 /* EDEPTH should be stacksize/34 */
@@ -607,7 +609,10 @@ extern FILE * _cdecl osbopen(const char *name, const char *mode);   /* open bina
 #endif
 #undef MEDMEM       /* Except for Windows, in the future */
 #endif
+#ifdef XLSTDIO
+#undef GRAPHICS
 #endif
+#endif /* MSC */
 
 /* EMX GCC and OS/2 */
 #ifdef EMX
@@ -890,7 +895,7 @@ extern int osopen();
 #define C_HOME2 (3144) /* XTERM Variant */
 #define C_END2 (3142)  /* XTERM variant */
 #define C_EOF (4)
-#endif
+#endif /* LINUX */
 
 /* IBM/370 implementations using the SAS/C compiler */
 #ifdef __SASC__
@@ -926,7 +931,7 @@ extern int osopen();
 #endif
 #define FNAMEMAX MAXPATHLEN
 #define STRMAX MAXPATHLEN
-#endif
+#endif /* __SASC__ */
 
 /* Amiga Lattice 5.04 (From Hume Smith) */
 #ifdef AMIGA
@@ -942,7 +947,9 @@ extern int osopen();
 #undef MEDMEM
 #undef FILETABLE    /* not ported */
 #undef ASCII8
-#endif
+#endif /* AMIGA */
+
+
 
 /*>>>>>>> For other systems -- You are on your own! */
 
@@ -1838,6 +1845,14 @@ extern int initXlisp _((char *resfile));    /* Initialize, return error code */
 extern int execXlisp _((char *cmd, int restype, 
         char FAR * FAR *resstr, LVAL * resval)); /* execute expression */
 extern VOID wrapupXlisp _((void));          /* relinquish memory, quit */
+#endif
+
+#ifndef XLADAPT64CMT
+#define XLADAPT64CMT "Adapted for 64bit (RE2026) "
+#endif
+
+#ifndef XLADAPT64CFG
+#define XLADAPT64CFG "Original 3.5"
 #endif
 
 extern int checkfeatures _((LVAL arg, int which));  /* features featuure */

@@ -21,11 +21,15 @@ the function call, to avoid warnings of the form
 The new getxlptrt() and cvxlptrt() are introduced to enable 
 64bit conversion between XLPTYPE (void *) and Fixnum node 
 (internal value type FIXTYPE64).
+In xlsys.c the usage of real_tick_count() for random  generator
+is enclosed in preprocessor scope TIMES.
 
 In the new Makefiles the following preprocessor defines are used:
 XLPTR64: prepares code for handling of 64bit pointers.
 XLIFIX64: prepares code to define xf_fixnum as FIXTYPE64 (long long) in Fixnum node.
 XLWIN64: prepares code in win32stu.c to use new 64bit versions of Windows API.
+XLSTDIO: Terminal IO is done only via stdio (no tty or GUI).
+XLADAPT64CFG: A string describing used Makefile.
 
 New in code:
 GetFixnum(): retrieves FIXTYPE (32bit) from 64bit xf_fixnum after range check.
@@ -49,6 +53,10 @@ The Windows xlisp.exe created by makevswin32 with VS2022 X64_X86 Cross Tools doe
 Same holds for makevswin64 with VS2022 X64 Native Tools.
 
 Executable xlisp created with makelx64 seems to work fine.
+Executable xlisp created with makelx64stdio seems to work fine with reduced tty features.
+Executable xlisp.exe created with makevs32stdio or makevs64stdio seems to work fine in console without gGUI.
+
+
 
 See also the original README.
 
