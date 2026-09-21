@@ -108,7 +108,7 @@ int xlisave(fname)
 #endif
 
     /* setup the initial file offsets */
-    off = foff = (OFFTYPE)2;
+    off = foff = (OFFTYPE) SEGMENTOFFBASE;
 
     /* write out all nodes that are still in use */
     for (seg = segs; seg != NULL; seg = seg->sg_next) {
@@ -248,7 +248,7 @@ int xlirestore(fname)
     freeimage();
 
     /* initialize */
-    off = (OFFTYPE)2;
+    off = (OFFTYPE) SEGMENTOFFBASE;
     total = nnodes = nfree = 0L;
     fnodes = NIL;
     segs = lastseg = NULL;
@@ -533,7 +533,7 @@ LOCAL OFFTYPE NEAR readptr()
 LOCAL LVAL NEAR cviptr(o)
   OFFTYPE o;
 {
-    OFFTYPE off = (OFFTYPE)2;
+    OFFTYPE off = (OFFTYPE) SEGMENTOFFBASE;
     OFFTYPE numnodes;
     SEGMENT FAR *seg;
 
@@ -544,6 +544,12 @@ LOCAL LVAL NEAR cviptr(o)
     /* Check lower limit of o */
     if (o < off) {
         xlerror ("Input offset below start offset.", NIL);
+	return (NIL);
+	}
+    
+    /* Check upper limit of o */
+    if (o > MAXOFFTYPE) {
+        xlerror ("Input offset above maximum offset.", NIL);
 	return (NIL);
 	}
     
@@ -559,10 +565,10 @@ LOCAL LVAL NEAR cviptr(o)
     for (;;) {
     
         /* Calculate maximum remaing OFFTYPE range. */
-	if ((MAXOFFTYPE - anodes) <= off) {
+	if ((MAXOFFTYPE - anodes) >= off) {
 	   numnodes = anodes;
 	} else {
-	    numnodes = (MAXOFFTYPE - anodes);
+	    numnodes = (MAXOFFTYPE - off);
 	}
 
         /* create the next segment */
@@ -586,7 +592,7 @@ LOCAL LVAL NEAR cviptr(o)
 LOCAL OFFTYPE NEAR cvoptr(p)
   LVAL p;
 {
-    OFFTYPE off = (OFFTYPE)2;
+    OFFTYPE off = (OFFTYPE) SEGMENTOFFBASE;
     SEGMENT FAR *seg;
 #ifdef XLPTR64
     unsigned long long np = CVPTR(p);

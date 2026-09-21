@@ -72,7 +72,7 @@ int xlisave(fname)
 #endif
 
     /* setup the initial file offsets */
-    off = foff = (OFFTYPE)2;
+    off = foff = (OFFTYPE) SEGMENTOFFBASE;
 
     /* write out all nodes that are still in use */
     for (seg = segs; seg != NULL; seg = seg->sg_next) {
@@ -448,6 +448,12 @@ LOCAL LVAL NEAR cviptr(o)
 	return (NIL);
 	}
     
+    /* Check upper limit of o */
+    if (o > MAXOFFTYPE) {
+        xlerror ("Input offset above maximum offset.", NIL);
+	return (NIL);
+	}
+    
     /* compute a pointer for this offset */
     for (seg = segs; seg != NULL; seg = seg->sg_next) {
         assert (o >= off);
@@ -460,10 +466,10 @@ LOCAL LVAL NEAR cviptr(o)
     for (;;) {
 
         /* Calculate maximum remaing OFFTYPE range. */
-	if ((MAXOFFTYPE - anodes) <= off) {
+	if ((MAXOFFTYPE - anodes) >= off) {
 	   numnodes = anodes;
 	} else {
-	    numnodes = (MAXOFFTYPE - anodes);
+	    numnodes = (MAXOFFTYPE - off);
 	}
 
     /* create the next segment */

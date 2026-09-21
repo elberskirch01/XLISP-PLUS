@@ -203,7 +203,11 @@ VOID osinit(char *banner)
         if(!redirectin) {
           fprintf(stderr,"%s.\n%s[%s]\nLinux version\n", 
 	      banner, XLADAPT64CMT, XLADAPT64CFG );
+#if 0	      
 	  fprintf (stderr, "  Sizeof(struct node) = %zd\n", sizeof (struct node));
+	  fprintf (stderr, "ULONG_MAX = %lu\n", ULONG_MAX);
+	  fprintf (stderr, "INT_MAX = %d\n", INT_MAX);
+#endif	  
 	  }
         if (!(redirectin && batchmode)) {
             init_tty();
@@ -313,12 +317,16 @@ int getslot()
     int i=0;
     
     for (; i < FTABSIZE; i++)   /* look for available slot */
+    {
         if (filetab[i].fp == NULL) return i;
+    }
     
     gc();   /* is this safe??????? */
 
     for (; i < FTABSIZE; i++) /* try again -- maybe one has been freed */
+    {
         if (filetab[i].fp == NULL) return i;
+    }
 
     xlfail("too many open files");
     

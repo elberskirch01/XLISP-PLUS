@@ -127,7 +127,13 @@ LVAL x,y;
 
 /* Code from Luke Tierney */
 #ifndef FIXBIGDIGS
-#define FIXBIGDIGS (sizeof(long)/sizeof(short)) /* = 2 for 32-bit long's */
+#define FIXBIGDIGS (sizeof(FIXTYPE)/sizeof(short)) /* = 2 for 32-bit long's */
+#endif
+#ifndef FIX64BIGDIGS
+#define FIX64BIGDIGS (sizeof(FIXTYPE64)/sizeof(short)) /* = 2 for 64-bit long's */
+#endif
+#ifndef ULLONGBIGDIGS
+#define ULLONGBIGDIGS (sizeof(unsigned long long)/sizeof(short)) /* = 2 for 64-bit ulong's */
 #endif
 #ifndef FLOATBIGDIGS
 #define FLOATBIGDIGS 4
@@ -174,6 +180,29 @@ LVAL x; int *expo;
   return (sign?-(double)temp : (double)temp);
 }
 
+#ifdef XLIFIX64
+LVAL cvtfix64bignum(n)
+FIXTYPE64 n;
+{
+    /* TAA mod -- fixed so that abs(n) is first argument to convert */
+    return (n<0 ? cvtullongbignum(-n, 1) : cvtullongbignum(n, 0));
+}
+
+LVAL cvtullongbignum(n, sign)
+unsigned long long n; int sign;
+{
+  LVAL x = newbignum(FIX64BIGDIGS);
+  BIGNUMDATA FAR *v = getbignumarray(x);
+  int i;
+
+  *v++ = (BIGNUMDATA) sign;
+  v += FIX64BIGDIGS - 1;  /* advance to point to least significant digit */
+  for (i = 0; i < (int)FIX64BIGDIGS; i++, n >>= 16)
+    *v-- = (BIGNUMDATA)(n & 0xffff);
+  return (FIX64BIGDIGS > 2) ? normalBignum(x) : x;
+}
+
+#endif
 
 FLOTYPE cvtbigratioflonum(num, denom)
 LVAL num, denom;
@@ -311,6 +340,60 @@ LVAL x; FIXTYPE *n;
         if (value > 0) return FALSE; /* negative value too big */
     }
     else if (value < 0) return FALSE; /* positive value too big */
+    *n = value;
+    return TRUE;
+}
+#endif
+
+#ifdef XLIFIX64 
+int cvtbigfix64num(x, n)
+LVAL x; FIXTYPE64 *n;
+{
+    /* returns a success flag */
+    BIGNUMDATA FAR *v = getbignumarray(x);
+    int sign = (int)*v++;
+    int size = (int) getbignumsize(x);
+    FIXTYPE64 value;
+    /* toss leading zeroes */
+    if (*v == 0 && size > 2) {
+        v++;
+        size--;
+    }
+    /* is it too big?? */
+    if (size > FIX64BIGDIGS) return FALSE;
+
+	for (value = 0; size > 0; size--, v++)
+		value = (value << 16) + v[0];
+//    value = ((long)(v[0]) << 16) + v[1];
+    if (sign) {
+        value = -value;
+        if (value > 0) return FALSE; /* negative value too big */
+    }
+    else if (value < 0) return FALSE; /* positive value too big */
+    *n = value;
+    return TRUE;
+}
+
+int cvtbigullong(x, n)
+LVAL x; unsigned long long *n;
+{
+    /* returns a success flag */
+    BIGNUMDATA FAR *v = getbignumarray(x);
+    int sign = (int)*v++;
+    int size = (int) getbignumsize(x);
+    unsigned long long value;
+    /* Unable to convert negative bignum. */
+    if (sign) return (FALSE);
+    /* toss leading zeroes */
+    if (*v == 0 && size > 2) {
+        v++;
+        size--;
+    }
+    /* is it too big?? */
+    if (size > (int)ULLONGBIGDIGS) return FALSE;
+
+	for (value = 0; size > 0; size--, v++)
+		value = (value << 16) + v[0];
     *n = value;
     return TRUE;
 }

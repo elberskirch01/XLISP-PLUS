@@ -427,6 +427,7 @@ FIXTYPE Getfixnum (x)
     return (x->n_fixnum);
 #endif
 }
+
 /* cvxlptrt - convert an memory adress (pointer) to a fixnum node */
 LVAL cvxlptrt(p)
   XLPTYPE p;
@@ -435,7 +436,7 @@ LVAL cvxlptrt(p)
 #ifdef XLIFIX64    
     FIXTYPE64 n = (FIXTYPE64) p;
 #else
-    FIXTYPE32 n = (FIXTYPE32 p;
+    FIXTYPE32 n = (FIXTYPE32) p;
 #endif
     if (n >= SFIXMIN && n <= SFIXMAX)
         return (&fixseg->sg_nodes[(int)n-SFIXMIN]);
@@ -1066,6 +1067,11 @@ SEGMENT FAR *newsegment(n)
 {
     SEGMENT FAR *newseg;
 
+    /* Limit n to maximum allowed */
+    if ((MAXNODES - n) < nnodes) n = MAXNODES - nnodes;
+    /* Reject if allowed is exceeded. */
+    if (n <= 0) return (NULL);
+
     /* allocate the new segment */
     if ((newseg = (SEGMENT FAR *)CALLOC(1,segsize(n))) == NULL)
         return (NULL);
@@ -1322,4 +1328,78 @@ LVAL newcomplex(real,imag)
     return(newdcomplex(makefloat(real), makefloat(imag)));
 }
 #endif
+#endif
+
+#ifdef XLOFFSET
+int cvoffptr(o, pp)
+  OFFTYPE o; LVAL *pp;
+{
+    OFFTYPE off = (OFFTYPE) SEGMENTOFFBASE;
+    OFFTYPE numnodes;
+    SEGMENT *seg;
+
+    /* check for nil */
+    if (o == FILENIL) {
+        *pp = NIL;
+        return (TRUE);
+    }
+
+    /* Check lower limit of o */
+    if (o < off) {
+        *pp = NIL;
+	return (FALSE);
+    }
+    
+    /* compute a pointer for this offset */
+    for (seg = segs; seg != NULL; seg = seg->sg_next) {
+        assert (o >= off);
+        if ((o - off) < (OFFTYPE)seg->sg_size) {
+	    *pp = (seg->sg_nodes + (unsigned int)(o - off));
+	    return (TRUE);
+	}
+        off += (OFFTYPE)seg->sg_size;
+    }
+    *pp = NIL;
+    return (FALSE);
+}
+
+int cvptroff(p, poff)
+  LVAL p;
+  OFFTYPE *poff;
+{
+    OFFTYPE off = (OFFTYPE) SEGMENTOFFBASE;
+    SEGMENT *seg;
+#ifdef XLPTR64
+    unsigned long long np = CVPTR(p);
+#else
+    OFFTYPE np = CVPTR(p);
+#endif    
+
+    /* check for nil */
+    if (null(p))
+        return (FILENIL);
+
+    /* compute an offset for this pointer */
+    for (seg = segs; seg != NULL; seg = seg->sg_next) {
+        if (np >= CVPTR(&seg->sg_nodes[0]) &&
+            np <  CVPTR(&seg->sg_nodes[seg->sg_size])) {
+	    OFFTYPE segoff = ((np-CVPTR(seg->sg_nodes))/sizeof(struct node));
+	    /* Check upper limit of off */
+	        if ((MAXOFFTYPE - segoff) < off) {
+	            xlfatal ("Too many nodes in segments.");
+	           return (FALSE);
+	        }
+                *poff = off + segoff;
+		return (TRUE);
+		}
+	/* Check upper limit of off */
+	if ((MAXOFFTYPE - (OFFTYPE) seg->sg_size) < off) {
+	    xlfatal ("Too many nodes in segments.");
+	    return (FALSE);
+	}
+        off += (OFFTYPE)seg->sg_size;
+    }
+    /* Pointer not found */
+    return (FALSE);
+}
 #endif
