@@ -14,6 +14,9 @@ LOCAL VOID NEAR putatm _((LVAL fptr, char *tag, LVAL val));
 LOCAL VOID NEAR putsubr _((LVAL fptr, char *tag, LVAL val));
 LOCAL VOID NEAR putclosure _((LVAL fptr, LVAL val));
 LOCAL VOID NEAR putfixnum _((LVAL fptr, FIXTYPE n));
+#ifdef XLIFIX64
+LOCAL VOID NEAR putfixnum64 _((LVAL fptr, FIXTYPE64 n));
+#endif
 #ifdef BIGNUMS
 LOCAL VOID NEAR putbignum _((LVAL fptr, LVAL n));
 #endif
@@ -106,7 +109,11 @@ VOID xlprintl(fptr,vptr,flag)
         putpacksym(fptr, vptr, flag);
         break;
     case FIXNUM:
+#ifdef XLIFIX64
+        putfixnum64(fptr,getfixnum64(vptr));
+#else
         putfixnum(fptr,getfixnum(vptr));
+#endif	
         break;
     case FLONUM:
         putflonum(fptr,getflonum(vptr));
@@ -688,6 +695,39 @@ LOCAL VOID NEAR putfixnum(fptr,n)
 #endif
     xlputstr(fptr,buf);
 }
+
+#ifdef XLIFIX64
+/* putfixnum - output a fixnum */
+LOCAL VOID NEAR putfixnum64(fptr,n)
+  LVAL fptr; FIXTYPE64 n;
+{
+#ifdef BIGNUMS
+    if (getvalue(s_printbase) != NIL) {
+        /* expect non decimal radix */
+        putbignum(fptr, cvtfix64bignum(n));
+        return;
+    }
+    else {
+        sprintf(buf, I64FMT, n);
+    }
+#else
+    LVAL val;
+#ifdef MEDMEM
+    char fmt[STRMAX];
+    val = getvalue(s_ifmt);
+    STRCPY(fmt, stringp(val) && getslength(val) < STRMAX ?
+        getstring(val) : (char FAR *)I64FMT);
+#else
+    char *fmt;
+
+    val = getvalue(s_ifmt);
+    fmt = (stringp(val) ? getstring(val) : I64FMT);
+#endif
+    sprintf(buf,fmt,n);
+#endif
+    xlputstr(fptr,buf);
+}
+#endif
 
 #ifdef PACKAGES
 /* putpackage - output package */

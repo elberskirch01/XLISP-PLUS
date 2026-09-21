@@ -289,10 +289,12 @@
 /* NEAR         function is is same segment (8086 processors) () */
 /* AFMT         printf format for addresses ("%x") */
 /* AFMTTYPE     printf parameter type for addresses ("%x") */
+/* FIXTYPE32    data type for fixed point numbers (long) */
+/* FIXTYPE64    data type for fixed point numbers (long long) */
 /* FIXTYPE      data type for fixed point numbers (long) */
 /* ITYPE        fixed point input conversion routine type (long atol()) */
 /* ICNV         fixed point input conversion routine (atol) */
-/* IFMT         printf format for fixed point numbers ("%ld") (no BIGNUMS)*/
+/* I64FMT       printf format for long fixed point numbers ("%lld") (no BIGNUMS)*/
 /* XLPTYPE      data type for memory address (void *) */
 /* FLOTYPE      data type for floating point numbers (double) */
 /* OFFTYPE      number the size of an address (int) */
@@ -394,6 +396,7 @@
 /* C_HOME       Start of line (home) */
 /* C_END        End of line (end) */
 
+/* Platform begin ZTC */
 /* for Zortech C  -- Versions 2.0 and above, please */
 /* Works for Large Model, 268PM model (Z), and 386PM model (X) */
 /* GRAPHICS ok */
@@ -425,7 +428,6 @@ extern FILE * _cdecl osbopen(const char *name, const char *mode);   /* open bina
 #define AFMT            "%lx"
 #define AFMTTYPE        unsigned long
 #define OFFTYPE         unsigned long
-#define MAXOFFTYPE       ULONG_MAX
 #if __ZTC__ < 0x300
 #define IEEEFP      /* they fixed this */
 #endif
@@ -439,13 +441,16 @@ extern FILE * _cdecl osbopen(const char *name, const char *mode);   /* open bina
 #endif
 #endif
 #undef MEDMEM       /* doesn't work, as of V2.1 */
-#endif
+#endif /* __ZTC__ */
 
 /* for the Turbo C compiler - MS-DOS, large or medium model */
 /* Version 1.5 and 2.0.  1.5 won't compile with TIMES */
 /* Also for Turbo/Borland C++, as a C compiler */
 /* GRAPHICS ok */
 /* EDEPTH should be stacksize/24 for MEDMEM */
+
+/* Platform begin TURBOC */
+
 #ifdef __TURBOC__
 #ifdef __WIN32__
 /* These are for Win32 */
@@ -487,7 +492,6 @@ extern char *stackbase;
 #define AFMT            "%lx"
 #define AFMTTYPE        unsigned long
 #define OFFTYPE         unsigned long
-#define MAXOFFTYPE       ULONG_MAX
 #ifdef MEDMEM
 #define CVPTR(x)        (unsigned long)(x)
 #else
@@ -509,8 +513,9 @@ extern FILE * _Cdecl osbopen(const char *name, const char *mode);   /* open bina
 double myldexp(double, int);
 #endif
 #endif
-#endif /* WINDOWS */
+#endif /* __TURBOC__ */
 
+/* Platform begin TSC */
 
 /* for the JPI TopSpeed C Compiler, Medium or Large memory model */
 /* GRAPHICS ok */
@@ -530,7 +535,6 @@ extern char *stackbase; /* in theory-- we should use TSC's function */
 #define AFMT            "%lx"
 #define AFMTTYPE        unsigned long
 #define OFFTYPE         unsigned long
-#define MAXOFFTYPE       ULONG_MAX
 #ifdef MEDMEM
 #define CVPTR(x)        (unsigned long)(x)
 #else
@@ -545,6 +549,8 @@ extern char *stackbase; /* in theory-- we should use TSC's function */
 extern FILE *osbopen(const char *name, const char *mode);   /* open binary file */
 #endif
 #endif
+
+/* Platform begin MSC */
 
 /* For Microsoft Visual C++, version 4.0 or later (32 bit windows) */
 /* for the Microsoft C compiler - MS-DOS, large model */
@@ -594,7 +600,6 @@ extern char *stackbase;
 #define CVPTR(x)        ((((unsigned long)(x) >> 16) << 4) + ((unsigned) x))
 #endif
 #define OFFTYPE         unsigned long
-#define MAXOFFTYPE       ULONG_MAX
 #define CDECL _cdecl
 #define DOSINPUT
 #undef JMAC         /* not worth effort if cramped for space */
@@ -613,6 +618,8 @@ extern FILE * _cdecl osbopen(const char *name, const char *mode);   /* open bina
 #undef GRAPHICS
 #endif
 #endif /* MSC */
+
+/* Platform begin EMX */
 
 /* EMX GCC and OS/2 */
 #ifdef EMX
@@ -715,7 +722,6 @@ extern char *stackbase;
 #define AFMT                    "%lx"
 #define AFMTTYPE        unsigned long
 #define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
-#define MAXOFFTYPE       ULONG_MAX
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -774,7 +780,6 @@ extern char *stackbase;
 #define AFMT                    "%lx"
 #define AFMTTYPE        unsigned long
 #define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
-#define MAXOFFTYPE       ULONG_MAX
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -855,7 +860,6 @@ extern char *stackbase;
 #define CVPTR(x)        ((unsigned long)(x))
 #endif
 #define OFFTYPE                 unsigned long    /* TAA Added 2/94 */
-#define MAXOFFTYPE       ULONG_MAX
 #ifndef SEEK_SET
 #define SEEK_SET                0
 #endif
@@ -1218,12 +1222,23 @@ extern VOID osclose _((int i)); /* we must define this */
 #ifndef IFMT
 #define IFMT            "%ld"
 #endif
+#ifndef I64FMT
+#define I64FMT            "%lld"
+#endif
 #ifndef FLOTYPE
 #define FLOTYPE         double
 #endif
 #ifndef OFFTYPE
 #define OFFTYPE         int
-#define MAXOFFTYPE      INT_MAX
+#endif
+#ifndef SEGMENTOFFBASE
+#define SEGMENTOFFBASE 2l
+#endif
+#ifndef MAXNODES
+#define MAXNODES (0x7fffffffl - SEGMENTOFFBASE)
+#endif
+#ifndef MAXOFFTYPE
+#define MAXOFFTYPE (MAXNODES + SEGMENTOFFBASE)
 #endif
 #ifndef CVPTR
 #define CVPTR(x)        ((OFFTYPE)(x))
@@ -1524,6 +1539,7 @@ extern VOID osclose _((int i)); /* we must define this */
 #define typearg(tp)     (tp(*xlargv) ? nextarg() : xlbadtype(*xlargv))
 #define nextarg()       (--xlargc, *xlargv++)
 #define moreargs()      (xlargc > 0)
+#define currentarg      (*xlargv)
 
 /* macros to get arguments of a particular type */
 #define xlgacons()      (testarg(typearg(consp)))
@@ -1634,8 +1650,16 @@ extern LVAL copybignum _((LVAL x, int sign));
 extern LVAL normalBignum _((LVAL x));
 extern LVAL cvtulongbignum _((unsigned long n, int sign));
 extern LVAL cvtfixbignum _((FIXTYPE n));
+#ifdef XLIFIX64
+extern LVAL cvtullongbignum _((unsigned long long n, int sign));
+extern LVAL cvtfix64bignum _((FIXTYPE64 n));
+#endif
 extern LVAL cvtflobignum _((FLOTYPE n));
 extern int cvtbigfixnum _((LVAL x, FIXTYPE *n));
+#ifdef XLIFIX64
+extern int cvtbigfix64num _((LVAL x, FIXTYPE64 *n));
+extern int cvtbigullong _((LVAL x, unsigned long long *n));
+#endif
 extern int comparebignum _((LVAL x, LVAL y));
 extern int zeropbignum _((LVAL x));
 extern FLOTYPE cvtbigflonum _((LVAL x));
@@ -1858,6 +1882,10 @@ extern VOID wrapupXlisp _((void));          /* relinquish memory, quit */
 extern int checkfeatures _((LVAL arg, int which));  /* features featuure */
 
 extern int getslot _((void));	/* UNIX/Linux/Mac OS X */
+
+#define FILENIL ((OFFTYPE)0)    /* value of NIL in a file */
+extern int cvoffptr _((OFFTYPE o, LVAL *pp));
+extern int cvptroff _((LVAL p, OFFTYPE *poff));
 
 #define NIL (&isnil)
 

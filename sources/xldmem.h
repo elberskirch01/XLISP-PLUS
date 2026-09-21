@@ -102,6 +102,7 @@
 /* fixnum/flonum/char access macros */
 #ifdef XLIFIX64
 #define getfixnum(x)    Getfixnum (x)
+#define getfixnum64(x)    ((FIXTYPE64) ((x)->n_fixnum))
 #else
 #define getfixnum(x)    ((FIXTYPE) ((x)->n_fixnum))
 #endif
